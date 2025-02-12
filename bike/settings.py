@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-ack9m#&*0#6bypc(!9afv*ye@0hbib5et#p%#6$=32osrv3zj_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.0.192"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.0.192", "*"]
 # 192.168.0.192 강의실
 # 192.168.219.106 집
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "users",
     "riding",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [

@@ -1,4 +1,7 @@
 {% load static %}
+<script>
+    var myLocationIcon = "{% static 'riding/images/my_location.logo.png' %}";
+</script>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -10,12 +13,15 @@
 <body>
     <main class="main">
         <div class="container">
-            <!-- 네비게이션 -->
-            <nav class="navigation">
-                <button class="nav-button" aria-label="메뉴 열기" id="menu-button">
-                    <img class="menu-logo" src="{% static 'riding/images/meun-logo.png' %}" alt="메뉴 아이콘" />
-                </button>
-            </nav>
+                <!-- 메뉴 버튼 -->
+                <button class="nav-button" aria-label="메뉴 열기" id="menu-button"></button>
+                <img class="menu-logo" src="{% static 'riding/images/menu-logo.png' %}" alt="메뉴 아이콘" /></img>
+                <!-- 시간 선택 버튼 -->
+                <button class="time-button" id="time-button" aria-label="시간 선택"></button>
+                <img class="time-logo" src="{% static 'riding/images/time-logo.png' %}" alt="시간 아이콘" /></img>
+                <!-- 위치 보기 버튼 -->
+                <button class="location-button" id="location-button" aria-label="위치 보기"></button>
+                <img class="location-logo" src="{% static 'riding/images/find-location-logo.png' %}" alt="위치 아이콘" /></img>
 
             <!-- 사용자 프로필 사이드바 -->
             <aside class="sidebar" id="sidebar">
@@ -24,6 +30,7 @@
                         <span class="name">햇살폭주족</span><span class="suffix">님</span>
                     </h1>
                 </header>
+                <div class="divider"></div>
                 <section class="user-stats">
                     <div class="stat-item">
                         <h2 class="stat-title">이번 달 주행 거리</h2>
@@ -37,11 +44,14 @@
                         <h2 class="stat-title">마일리지</h2>
                         <p class="stat-value"><span class="value">800</span> M</p>
                     </div>
+                    <div class="stat-item">
+                        <h2 class="stat-title">주 이용 대여소</h2>
+                    </div>
                 </section>
-                <section class="rental-info">
-                    <h2 class="rental-title">주 이용 대여소</h2>
+                <section class="rental-title">
                     <p class="rental-location">4826. 홈플러스 면목점</p>
                 </section>
+                <div class="divider"></div>
                 <nav class="user-menu">
                     <ul>
                         <li><a href="#mileage">마일리지 내역</a></li>
@@ -51,14 +61,12 @@
                 </nav>
             </aside>
 
-            <!-- 액션 버튼 -->
-            <div class="action-buttons">
-                <button class="action-button view" id="time-button" aria-label="시간 선택">
-                    <img class="time-logo" src="{% static 'riding/images/time-logo.png' %}" alt="시간 아이콘" />
-                </button>
-                <button class="action-button location" aria-label="위치 보기">
-                    <img class="location-logo" src="{% static 'riding/images/find-location-logo.png' %}" alt="위치 아이콘" />
-                </button>
+            <!-- 오버레이 -->
+            <div id="overlay" class="overlay"></div>
+
+            <!-- 지도 영역 -->
+            <div id="map_container">
+                <div id="map_div"></div>
             </div>
 
             <!-- 시간 선택 드롭업 -->
@@ -83,6 +91,15 @@
             </div>
         </div>
     </main>
+
+    <!-- Tmap API 스크립트 -->
+    <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey={{ TMAP_API_KEY }}"></script>
+    <script>
+        const bikeLocations = {{ bike_locations|safe }};
+        const parkLocations = {{ park_locations|safe }};
+        const museumLocations = {{ museum_locations|safe }};
+        const restaurantLocations = {{ restaurant_locations|safe }};
+    </script>
     <script src="{% static 'riding/js/map_main.js' %}"></script>
 </body>
 </html>
