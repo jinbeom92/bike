@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - 같이따릉</title>
+    <link rel="stylesheet" href="{% static 'users/css/login.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">로그인</h1>
+        <form id="loginForm" method="post">
+            {% csrf_token %}
+            <div class="id-input">
+                <label for="userId">아이디</label>
+                <input type="text" id="userId" name="username" placeholder="ID">
+            </div>
+            <div class="password-input">
+                <label for="userPassword">비밀번호</label>
+                <input type="password" id="userPassword" name="password" placeholder="Password">
+                <div id="errorMessage" class="error-message"></div>
+            </div>
+            <button type="submit" class="login-btn">로그인</button>
+            <button type="button" class="signup-btn">회원가입</button>
+        </form>
+        <div class="links">
+            <p>회원 정보를 잃어버리셨나요?</p>
+            <div class="recovery-links">
+                <a href="{% url 'users:find_id' %}">아이디 찾기</a>
+                <a href="{% url 'users:find_password' %}">비밀번호 찾기</a>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'users/js/login.js' %}"></script>
+</body>
+</html>
+

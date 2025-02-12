@@ -1,0 +1,209 @@
+/* 공통 스타일 초기화 및 접근성 향상 */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
+
+* {
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Pretendard", sans-serif;
+}
+
+/* 버튼 및 기본 스타일 */
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+button:hover, button:focus {
+  opacity: 0.8;
+}
+
+a {
+  text-decoration: none;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 메인 레이아웃 */
+.main {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.container {
+  background-color: #ffffff;
+  width: 375px;
+  height: 812px;
+  position: relative;
+}
+
+/* 네비게이션 */
+.navigation {
+  position: absolute;
+  top: 41px;
+  left: 314px;
+}
+
+.nav-button {
+  width: 52px;
+  height: 52px;
+  background-color: #ffffff;
+  border-radius: 26px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-logo {
+  width: 30px;
+  height: 30px;
+}
+
+/* 사이드바 */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px;
+  width: 250px;
+  height: 100vh;
+  background-color: #ffffff;
+  box-shadow: 2px 0px 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  transition: left 0.3s ease-in-out;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+/* 프로필 스타일 */
+.user-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: #352555;
+}
+
+.user-stats, .rental-info {
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  margin-bottom: 10px;
+}
+
+.stat-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #777;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #40b59f;
+}
+
+.user-menu ul {
+  list-style: none;
+  padding: 0;
+}
+
+.user-menu li {
+  margin-bottom: 15px;
+}
+
+.user-menu a {
+  font-size: 16px;
+  font-weight: 800;
+  color: #352555;
+}
+
+.user-menu a:hover {
+  text-decoration: underline;
+}
+
+/* 액션 버튼 */
+.action-buttons {
+  position: absolute;
+  right: 11px;
+  bottom: 86px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.action-button {
+  width: 52px;
+  height: 52px;
+  background-color: #ffffff;
+  border-radius: 26px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.time-logo, .location-logo {
+  width: 40px;
+  height: 40px;
+}
+
+/* 시간 선택 드롭업 */
+.time-dropdown {
+  display: none;
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  background-color: white;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.time-dropdown.visible {
+  display: block;
+}
+
+.time-selection__list {
+  list-style: none;
+  padding: 0;
+  text-align: center;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.time-selection__item {
+  padding: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #352555;
+  cursor: pointer;
+}
+
+.time-selection__item:hover {
+  background-color: #f0f0f0;
+}

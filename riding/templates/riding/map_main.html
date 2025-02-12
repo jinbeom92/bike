@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>지도 메인 페이지</title>
+    <link rel="stylesheet" href="{% static 'riding/css/map_main.css' %}" />
+</head>
+<body>
+    <main class="main">
+        <div class="container">
+            <!-- 네비게이션 -->
+            <nav class="navigation">
+                <button class="nav-button" aria-label="메뉴 열기" id="menu-button">
+                    <img class="menu-logo" src="{% static 'riding/images/meun-logo.png' %}" alt="메뉴 아이콘" />
+                </button>
+            </nav>
+
+            <!-- 사용자 프로필 사이드바 -->
+            <aside class="sidebar" id="sidebar">
+                <header>
+                    <h1 class="user-name">
+                        <span class="name">햇살폭주족</span><span class="suffix">님</span>
+                    </h1>
+                </header>
+                <section class="user-stats">
+                    <div class="stat-item">
+                        <h2 class="stat-title">이번 달 주행 거리</h2>
+                        <p class="stat-value"><span class="value">14.50</span> KM</p>
+                    </div>
+                    <div class="stat-item">
+                        <h2 class="stat-title">평균 주행 속도</h2>
+                        <p class="stat-value"><span class="value">8.00</span> KM/H</p>
+                    </div>
+                    <div class="stat-item">
+                        <h2 class="stat-title">마일리지</h2>
+                        <p class="stat-value"><span class="value">800</span> M</p>
+                    </div>
+                </section>
+                <section class="rental-info">
+                    <h2 class="rental-title">주 이용 대여소</h2>
+                    <p class="rental-location">4826. 홈플러스 면목점</p>
+                </section>
+                <nav class="user-menu">
+                    <ul>
+                        <li><a href="#mileage">마일리지 내역</a></li>
+                        <li><a href="#usage">이용 내역</a></li>
+                        <li><a href="#edit-profile">회원정보 변경</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- 액션 버튼 -->
+            <div class="action-buttons">
+                <button class="action-button view" id="time-button" aria-label="시간 선택">
+                    <img class="time-logo" src="{% static 'riding/images/time-logo.png' %}" alt="시간 아이콘" />
+                </button>
+                <button class="action-button location" aria-label="위치 보기">
+                    <img class="location-logo" src="{% static 'riding/images/find-location-logo.png' %}" alt="위치 아이콘" />
+                </button>
+            </div>
+
+            <!-- 시간 선택 드롭업 -->
+            <div class="time-dropdown" id="time-dropdown">
+                <ul class="time-selection__list">
+                    <li class="time-selection__item"><time>09 : 00</time></li>
+                    <li class="time-selection__item"><time>10 : 00</time></li>
+                    <li class="time-selection__item"><time>11 : 00</time></li>
+                    <li class="time-selection__item"><time>12 : 00</time></li>
+                    <li class="time-selection__item"><time>13 : 00</time></li>
+                    <li class="time-selection__item"><time>14 : 00</time></li>
+                    <li class="time-selection__item"><time>15 : 00</time></li>
+                    <li class="time-selection__item"><time>16 : 00</time></li>
+                    <li class="time-selection__item"><time>17 : 00</time></li>
+                    <li class="time-selection__item"><time>18 : 00</time></li>
+                    <li class="time-selection__item"><time>19 : 00</time></li>
+                    <li class="time-selection__item"><time>20 : 00</time></li>
+                    <li class="time-selection__item"><time>21 : 00</time></li>
+                    <li class="time-selection__item"><time>22 : 00</time></li>
+                    <li class="time-selection__item"><time>23 : 00</time></li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    <script src="{% static 'riding/js/map_main.js' %}"></script>
+</body>
+</html>

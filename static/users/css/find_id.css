@@ -1,0 +1,233 @@
+/* 기본 스타일 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 페이지 전체 레이아웃 설정 */
+body {
+    background-color: #F5F5F5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 메인 컨테이너 설정 */
+.container {
+    position: relative;
+    width: 405px;
+    height: 840px;
+    background: #FFFFFF;
+    box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.25);
+    border-radius: 32px;
+    padding: 40px;
+}
+
+/* 타이틀 스타일링 */
+.title {
+    color: #40B59F;
+    font-family: 'Pretendard';
+    font-size: 25px;
+    font-weight: 800;
+    text-align: center;
+    margin-top: 100px;
+}
+
+/* 타이틀 폼 스타일링 */
+#findIdForm {
+    position: relative;
+    width: 297px;
+    margin: 40px auto 0;
+}
+
+/* 이메일 필드 그룹 공통 스타일 */
+.input-group {
+    margin-top: 40px;
+}
+
+/* 인증번호 필드 그룹 공통 스타일 */
+.verification-group {
+    margin-top: 16px;
+    margin-bottom: 20px;
+    position: relative;
+}
+/* 이메일 필드 라벨 스타일링 */
+.input-group label {
+    display: block;
+    color: #352555;
+    font-family: 'Pretendard';
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 8px;
+}
+
+/* 인증번호 필드 라벨 스타일링 */
+.verification-group label {
+    display: block;
+    color: #352555;
+    font-family: 'Pretendard';
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 8px;
+}
+
+/* 이메일 입력 필드 스타일링 */
+.input-group input {
+    width: 60%;
+    height: 42px;
+    border-radius: 5px;
+    background: #FFF;
+    border: 1px solid #CFCBD2;
+    padding: 0 12px;
+    font-size: 12px;
+}
+
+/* 인증번호 입력 필드 스타일링 */
+.verification-group input {
+    width: 60%;
+    height: 42px;
+    border-radius: 5px;
+    background: #FFF;
+    border: 1px solid #CFCBD2;
+    padding: 0 12px;
+    font-size: 12px;
+}
+
+/* 입력 필드 플레이스홀더 스타일링 */
+input::placeholder {
+    color: #B5B5B5;
+}
+
+
+/* 인증번호 발송 버튼 스타일 */
+.verification-btn {
+    width: 100px;
+    height: 42px;
+    background: #DDDDDD;
+    border: none;
+    border-radius: 5px;
+    color: #352555;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 13px;
+}
+
+/* 인증하기 버튼 스타일 */
+.verify-btn {
+    width: 100px;
+    height: 42px;
+    background: #DDDDDD;
+    border: none;
+    border-radius: 5px;
+    color: #352555;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 13px;
+}
+
+/* 메시지 컨테이너 공통 스타일 */
+.message-container {
+    width: 300px;
+    margin: 5px auto; /* 위아래 간격 */
+    text-align: center;
+    font-size: 13px;
+    min-height: 45.5px; /* 기본 공백 유지 */
+    display: flex; /* 플렉스 박스를 사용해 중앙 정렬 */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.error-message, .result-message {
+    display: none;
+}
+
+/* 결과 메시지 스타일 */
+.result-message {
+    color: #352555;
+    font-size: 13px;
+    line-height: 1.5; /* 줄 간격 조정 */
+    display: none; /* 기본적으로 숨김 */
+    background-color: transparent; /* 배경색 제거 */
+}
+
+/* 에러 메시지 스타일 */
+.error-message {
+    color: #FF4444;
+    font-size: 13px;
+    font-weight: 500;
+    display: none; /* 기본적으로 숨김 */
+    background-color: transparent; /* 배경색 제거 */
+}
+
+/* 찾은 아이디 강조 스타일 */
+.user-id {
+    color: #40B59F;
+    font-weight: 700;
+}
+
+/* 메시지가 표시될 때의 스타일 */
+.error-message.show, .result-message.show {
+    display: block;
+}
+
+/* 로그인 버튼 스타일링 */
+.login-btn {
+    width: 297px;
+    height: 42px;
+    border-radius: 25px;
+    font-family: 'Pretendard';
+    font-size: 15px;
+    font-weight: 600;
+    background: #40B59F;
+    border: none;
+    color: #FFF;
+    cursor: pointer;
+    margin-bottom: 8px;
+    margin-top: 50px;
+}
+
+/* 비밀번호 찾기 스타일링 */
+.find-password-btn {
+    width: 297px;
+    height: 42px;
+    border-radius: 25px;
+    font-family: 'Pretendard';
+    font-size: 15px;
+    font-weight: 600;
+    background: #40B59F;
+    border: none;
+    color: #FFF;
+    cursor: pointer;
+    margin-bottom: 8px;
+    margin-top: 2px;
+}
+
+/* 모바일 반응형 스타일 */
+@media screen and (max-width: 375px) {
+    /* 모바일 컨테이너 조정 */
+    .container {
+        width: 100%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    /* 모바일 폼 레이아웃 조정 */
+    #findIdForm,
+    .button-group,
+    .message-container {
+        width: 100%;
+        padding: 0 20px;
+    }
+    
+    /* 모바일 버튼 너비 조정 */
+    .login-btn,
+    .find-password-btn {
+        width: 100%;
+    }
+}

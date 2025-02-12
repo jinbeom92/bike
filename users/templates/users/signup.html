@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'users/css/signup.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>회원가입</h1>
+        <form id="signupForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>아이디</label>
+                <input type="text" id="userId" placeholder="ID" required>
+                <div class="error-message" id="userIdError"></div>
+            </div>
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input type="password" id="userPw" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+                <label>비밀번호 확인</label>
+                <input type="password" id="userPwCheck" placeholder="Password" required>
+                <div class="error-message" id="userPwError"></div>
+            </div>
+            <div class="form-group">
+                <label>닉네임</label>
+                <input type="text" id="userNickname" placeholder="햇살폭주족" required>
+                <div class="error-message" id="userNickError"></div>
+            </div>
+            <div class="form-group">
+                <label>주민번호</label>
+                <div class="ssn-input">
+                    <input type="text" id="ssnFirst" placeholder="YYMMDD" maxlength="6">
+                    <span>-</span>
+                    <input type="text" id="ssnLast" placeholder="1******" maxlength="7">
+                    <div class="error-message" id="userssnError"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>이메일</label>
+                <div class="email-group">
+                    <input type="email" id="userEmail" placeholder="sample@gmail.com" required>
+                    <button type="button" class="verify-btn">인증번호 발송</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="verification-group">
+                    <input type="text" class="verify-input" maxlength="6" placeholder="인증번호 6자리 입력">
+                    <button type="button" class="email-verify-btn">인증하기</button>
+                </div>
+                <div class="error-message" id="emailVerificationError"></div>
+            </div>
+            <button type="submit" class="submit-btn">생성하기</button>
+        </form>
+    </div>
+    <script src="{% static 'users/js/signup.js' %}"></script>
+</body>
+</html>

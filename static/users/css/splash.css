@@ -1,0 +1,79 @@
+/* 모든 요소에 대한 기본 스타일 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body {
+    background-color: #F5F5F5;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.container {
+    position: relative;
+    width: 405px;
+    height: 840px;
+    background: #FFFFFF;
+    box-shadow: 0px 0px 40px rgba(0, 0, 0, 0.25);
+    border-radius: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo {
+    width: 180px;  /* 로고 이미지 전체 크기 */
+    object-fit: contain;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 155px;
+}
+
+.start-button {
+    display: inline-block;
+    width: 297px;
+    height: 55px;
+    border: none;
+    border-radius: 25px;
+    background: #40B59F;
+    color: #FFF;
+    font-family: 'Pretendard';
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    line-height: 55px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.start-button:hover {
+    background: #379e8a;
+}
+
+/* 모바일 (스마트폰) */
+@media screen and (max-width: 480px) {
+    .container {
+        width: 95%;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .logo-container {
+        margin-bottom: 12vh;
+    }
+
+    .start-button {
+        width: 90%;
+    }
+}

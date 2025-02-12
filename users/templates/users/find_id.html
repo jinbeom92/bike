@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이디 찾기 - 같이따릉</title>
+    <link rel="stylesheet" href="{% static 'users/css/find_id.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">아이디 찾기</h1>
+        <form id="findIdForm" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <div class="email-group">
+                    <label for="email">이메일</label>
+                    <input type="email" id="email" name="email" placeholder="이메일을 입력하세요">
+                    <button type="button" class="verification-btn">인증번호 발송</button>
+                </div>
+                <div class="verification-group">
+                    <label for="verification">인증번호</label>
+                    <input type="text" name="verification_code" placeholder="인증번호 6자리 입력">
+                    <button type="button" class="verify-btn">인증하기</button>
+                </div>
+                <div class="message-container">
+                    <p class="error-message"></p>
+                    <p class="result-message">회원님의 아이디는 다음과 같습니다.<br><span class="user-id"></span></p>
+                </div>
+            </div>
+            <div class="button-group">
+                <button type="button" class="login-btn">로그인</button>
+                <button type="button" class="find-password-btn">비밀번호 찾기</button>
+            </div>
+        </form>
+    </div>
+    <script src="{% static 'users/js/find_id.js' %}"></script>
+</body>
+</html>
