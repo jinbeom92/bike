@@ -1,0 +1,47 @@
+<!-- 사용자 프로필 사이드바 -->
+<aside class="sidebar" id="sidebar">
+    <header>
+        <h1 class="user-name">
+            {% if user.is_authenticated %}
+                <span class="name">{{ user.profile.nickname }}</span><span class="suffix">님</span>
+            {% endif %}
+        </h1>
+    </header>
+    <div class="divider"></div>
+    <section class="user-stats">
+        <div class="stat-item">
+            <h2 class="stat-title">이번 달 주행 거리</h2>
+            {% if user.is_authenticated %}
+                <p class="stat-value"><span class="value">{{ user.profile.monthly_distance }}</span> KM</p>
+            {% endif %}
+        </div>
+        <div class="stat-item">
+            <h2 class="stat-title">평균 주행 속도</h2>
+            {% if user.is_authenticated %}
+                <p class="stat-value"><span class="value">{{ user.profile.average_speed }}</span> KM/H</p>
+            {% endif %}
+        </div>
+        <div class="stat-item">
+            <h2 class="stat-title">마일리지</h2>
+            {% if user.is_authenticated %}
+                <p class="stat-value"><span class="value">{{ user.profile.mileage }}</span> M</p>
+            {% endif %}
+        </div>
+        <div class="stat-item">
+            <h2 class="stat-title">주 이용 대여소</h2>
+        </div>
+    </section>
+    <section class="rental-title">
+        {% if user.is_authenticated %}
+            <h2 class="rental-location">{{ user.profile.preferred_station }}</h2>
+        {% endif %}
+    </section>
+    <div class="divider"></div>
+    <nav class="user-menu">
+        <ul>
+            <li><a href="#mileage">마일리지 내역</a></li>
+            <li><a href="#usage">이용 내역</a></li>
+            <li><a href="#edit-profile">회원정보 변경</a></li>
+        </ul>
+    </nav>
+</aside>

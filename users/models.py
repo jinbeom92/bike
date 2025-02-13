@@ -13,6 +13,8 @@ class Profile(models.Model):
     preferred_station = models.CharField(max_length=100, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-
+    monthly_distance = models.IntegerField(default=0)
+    average_speed = models.IntegerField(default=0)
+    mileage = models.IntegerField(default=0)
     def __str__(self):
         return f"{self.user.username}'s profile"

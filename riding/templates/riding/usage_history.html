@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이용 내역</title>
+    <link rel="stylesheet" href="{% static 'riding/css/usage_history.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- 메뉴 버튼 -->
+        <button class="nav-button" aria-label="메뉴 열기" id="menu-button"></button>
+        <img class="menu-logo" src="{% static 'riding/images/menu-logo.png' %}" alt="메뉴 아이콘" /></img>
+
+        <!-- 사용자 프로필 사이드바 불러오기 -->
+        {% include 'riding/user_sidebar.html' %}
+
+        <div class="header">
+            <h1>이용 내역</h1>
+            <div class="divider"></div>
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <span class="username">{{ user.profile.nickname }}</span> 님
+                {% endif %}
+            </div>
+        </div>
+        <div class="filter-buttons">
+            <button class="filter-btn">이번달</button>
+            <button class="filter-btn">지난달</button>
+            <button class="filter-btn">최근 3개월</button>
+        </div>
+        <div class="history-list">
+            <div class="history-item">
+                <div class="date">2025.02.06</div>
+                <hr>
+                <div class="detail">
+                    <div class="info">
+                        <span>이용시간</span>
+                        <span class="value">20</span> <span>분</span>
+                    </div>
+                    <div class="info">
+                        <span>이동거리</span>
+                        <span class="value">20.00</span> <span>KM</span>
+                    </div>
+                    <div class="info">
+                        <span>칼로리</span>
+                        <span class="value">200</span> <span>KCAL</span>
+                    </div>
+                    <div class="info">
+                        <span>경유지</span>
+                        <span class="value">포비 본점</span>
+                    </div>
+                </div>
+            </div>
+            <div class="history-item">
+                <div class="date">2025.02.05</div>
+                <hr>
+                <div class="detail">
+                    <div class="info">
+                        <span>이용시간</span>
+                        <span class="value">15</span> <span>분</span>
+                    </div>
+                    <div class="info">
+                        <span>이동거리</span>
+                        <span class="value">10.50</span> <span>KM</span>
+                    </div>
+                    <div class="info">
+                        <span>칼로리</span>
+                        <span class="value">150</span> <span>KCAL</span>
+                    </div>
+                    <div class="info">
+                        <span>경유지</span>
+                        <span class="value">서울역</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="save-btn">저장하기</button>
+    </div>
+    <script src="{% static 'riding/js/usage_history.js' %}"></script>
+</body>
+</html>

@@ -66,3 +66,7 @@ def user_sidebar_info(request):
     }
 
     return JsonResponse(sidebar_data, safe=False)
+
+@login_required  # 로그인된 사용자만 접근 가능
+def test_view(request):
+    return render(request, "riding/usage_history.html", {"user": request.user})
