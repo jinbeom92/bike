@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from decimal import Decimal
 
 
 # 이용 내역 통계 필드
@@ -19,6 +20,25 @@ class RideHistory(models.Model):
         max_digits=6, decimal_places=2, default=0.00
     )  # 소모 칼로리 (KCAL)
     frequent_route = models.CharField(max_length=255, null=True, blank=True)  # 경유지
+
+    def save(self, *args, **kwargs):
+        """
+        저장하기 전에 칼로리를 계산하여 calories 필드에 저장합니다.
+        """
+        profile = self.user.profile  # Profile 모델에서 사용자 체중 가져오기
+        if profile.weight and self.usage_time > 0:
+            METs = Decimal("5.8")  # Decimal로 변환된 METs 값
+            time_in_hours = Decimal(self.usage_time) / Decimal(
+                "60"
+            )  # 분을 시간으로 변환
+            weight = Decimal(profile.weight)  # 체중을 Decimal로 변환
+            self.calories = weight * METs * time_in_hours * Decimal("1.05")
+        else:
+            self.calories = Decimal(
+                "0.00"
+            )  # 체중 또는 주행 시간이 없으면 칼로리 0으로 설정
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username} - {self.ride_date}"

@@ -27,11 +27,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 const occupancyRate = parseFloat(location.거치율);
                 let markerImage;
 
-                if (70 > occupancyRate > 130) {
+                if (occupancyRate >= 130 ) {
                     markerImage = markerImages.max;
-                } else if (30 > occupancyRate >= 70) {
+                } else if (occupancyRate > 30 && occupancyRate < 130) {
                     markerImage = markerImages.mean;
-                } else {
+                } else if (occupancyRate >= 0 && occupancyRate <= 30) {
                     markerImage = markerImages.min;
                 }
 
@@ -110,6 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const mileageButton = document.querySelector(".mileage");
     const usageButton = document.querySelector(".usage");
     const editProfileButton = document.querySelector(".edit-profile");
+    const homeButton = document.querySelector(".home");
 
     // 📌 요소가 없을 경우 경고 출력 후 함수 종료
     if (!menuButton || !sidebar) {
@@ -132,6 +133,12 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // 📌 **클릭 시 페이지 이동 (Django URL 패턴 적용)**
+    if (homeButton) {
+        homeButton.addEventListener("click", function () {
+            window.location.href = "/riding/map_main/";
+        });
+    }
+
     if (mileageButton) {
         mileageButton.addEventListener("click", function () {
             window.location.href = "/riding/mileage_history/";
@@ -155,36 +162,56 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // 🚀 **사용자 사이드바 정보 로드 함수**
-function loadUserSidebarInfo() {
-    fetch("/riding/api/sidebar-info/")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log("✅ 사용자 정보 로드 성공:", data);
+function updateSidebarInfo() {
+    fetch('/riding/api/sidebar-info/')
+    .then(response => {
+        console.log("📡 API 응답 상태:", response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log("📡 API 응답 데이터:", data);
 
-            // 🌟 요소 존재 여부 확인 후 업데이트
-            updateSidebarInfo(".user-name .name", data.user_name);
-            updateSidebarInfo(".stat-value .value.monthly-distance", data.monthly_distance + " KM");
-            updateSidebarInfo(".stat-value .value.average-speed", data.average_speed + " KM/H");
-            updateSidebarInfo(".stat-value .value.total-mileage", data.total_mileage + " M");
-            updateSidebarInfo(".rental-location", data.most_used_station);
-        })
-        .catch(error => {
-            console.error("🚨 사용자 정보 로드 실패:", error);
-        });
+        // 이번 달 주행 거리 업데이트
+        const monthlyDistanceElement = document.querySelector('.stat-item:nth-child(1) .value');
+        if (monthlyDistanceElement) {
+            monthlyDistanceElement.textContent = data.monthly_distance > 0 ? data.monthly_distance : '0.00';
+        } else {
+            console.error("❌ monthlyDistanceElement를 찾을 수 없습니다.");
+        }
+
+        // 평균 주행 속도 업데이트
+        const averageSpeedElement = document.querySelector('.stat-item:nth-child(2) .value');
+        if (averageSpeedElement) {
+            averageSpeedElement.textContent = data.average_speed > 0 ? data.average_speed : '0.00';
+        } else {
+            console.error("❌ averageSpeedElement를 찾을 수 없습니다.");
+        }
+
+        // 마일리지 업데이트
+        const totalMileageElement = document.querySelector('.stat-item:nth-child(3) .value');
+        if (totalMileageElement) {
+            totalMileageElement.textContent = data.total_mileage > 0 ? data.total_mileage : '0';
+        } else {
+            console.error("❌ totalMileageElement를 찾을 수 없습니다.");
+        }
+
+        // 주 이용 대여소 업데이트
+        const mostUsedStationElement = document.querySelector('.rental-location');
+        if (mostUsedStationElement) {
+            mostUsedStationElement.textContent = data.most_used_station || '미등록';
+        } else {
+            console.error("❌ mostUsedStationElement를 찾을 수 없습니다.");
+        }
+    })
+    .catch(error => console.error('❌ API 요청 중 오류 발생:', error));
 }
 
-// 🚀 **사이드바 정보 업데이트 함수 (중복 코드 최소화)**
-function updateSidebarInfo(selector, value) {
-    const element = document.querySelector(selector);
-    if (element) {
-        element.innerText = value;
-    }
-}
+// 문서가 로드되면 사이드바 정보 업데이트
+document.addEventListener('DOMContentLoaded', function() {
+    updateSidebarInfo();
+    // 5분마다 정보 업데이트 (선택사항)
+    setInterval(updateSidebarInfo, 300000);
+});
 
 
 

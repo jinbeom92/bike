@@ -12,6 +12,14 @@ from django.conf import settings
 from users.models import Profile
 from riding.models import RideHistory, MileageHistory
 
+from users.utils import (
+    calculate_monthly_distance,
+    calculate_average_speed,
+    calculate_total_mileage,
+    update_most_used_station,
+    calculate_calories,
+)
+
 # 서울 공공자전거 API 키
 API_KEY = "6263764e466b706837364a78796944"
 
@@ -139,27 +147,25 @@ def map_main_view(request):
 # 사이드바 뷰
 @login_required
 def user_sidebar_info(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({"error": "Authentication required"}, status=401)
-
     try:
         profile = Profile.objects.get(user=request.user)
     except Profile.DoesNotExist:
         return JsonResponse({"error": "Profile not found"}, status=404)
 
+    monthly_distance = calculate_monthly_distance(request.user)
+    average_speed = calculate_average_speed(request.user)
+    total_mileage = calculate_total_mileage(request.user)
+    most_used_station = update_most_used_station(request.user)
+
     sidebar_data = {
         "user_name": profile.nickname if profile.nickname else request.user.username,
-        "monthly_distance": str(
-            profile.average_daily_distance
-        ),  # ✅ JSON 직렬화 문제 해결
-        "average_speed": str(profile.average_speed),
-        "total_mileage": profile.current_mileage,
-        "most_used_station": (
-            profile.most_used_station if profile.most_used_station else "미등록"
-        ),
+        "monthly_distance": str(monthly_distance),
+        "average_speed": str(average_speed),
+        "total_mileage": total_mileage,
+        "most_used_station": most_used_station if most_used_station else "미등록",
     }
 
-    print("✅ 사용자 정보 API 응답:", sidebar_data)  # ✅ 터미널에서 확인 가능
+    print("✅ 사용자 정보 API 응답:", sidebar_data)  # 터미널에서 데이터 출력
     return JsonResponse(sidebar_data)
 
 
