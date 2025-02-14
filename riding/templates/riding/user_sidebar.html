@@ -11,37 +11,59 @@
     <section class="user-stats">
         <div class="stat-item">
             <h2 class="stat-title">이번 달 주행 거리</h2>
-            {% if user.is_authenticated %}
-                <p class="stat-value"><span class="value">{{ user.profile.monthly_distance }}</span> KM</p>
-            {% endif %}
+            <p class="stat-value">
+                <span class="value">
+                    {% if user.profile.monthly_distance > 0 %}
+                        {{ user.profile.monthly_distance }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span> KM
+            </p>
         </div>
         <div class="stat-item">
             <h2 class="stat-title">평균 주행 속도</h2>
-            {% if user.is_authenticated %}
-                <p class="stat-value"><span class="value">{{ user.profile.average_speed }}</span> KM/H</p>
-            {% endif %}
+            <p class="stat-value">
+                <span class="value">
+                    {% if user.profile.average_distance > 0 %}
+                        {{ user.profile.average_distance }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span> KM/H
+            </p>            
         </div>
         <div class="stat-item">
             <h2 class="stat-title">마일리지</h2>
-            {% if user.is_authenticated %}
-                <p class="stat-value"><span class="value">{{ user.profile.mileage }}</span> M</p>
-            {% endif %}
+            <p class="stat-value">
+                <span class="value">
+                    {% if user.profile.total_mileage > 0 %}
+                        {{ user.profile.total_mileage }}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span> M
+            </p>
         </div>
         <div class="stat-item">
             <h2 class="stat-title">주 이용 대여소</h2>
         </div>
     </section>
     <section class="rental-title">
-        {% if user.is_authenticated %}
-            <h2 class="rental-location">{{ user.profile.preferred_station }}</h2>
-        {% endif %}
+        <h2 class="rental-location">
+            {% if user.profile.most_used_station %}
+                {{ user.profile.most_used_station }}
+            {% else %}
+                미등록
+            {% endif %}
+        </h2>
     </section>
     <div class="divider"></div>
     <nav class="user-menu">
         <ul>
-            <li><a href="#mileage">마일리지 내역</a></li>
-            <li><a href="#usage">이용 내역</a></li>
-            <li><a href="#edit-profile">회원정보 변경</a></li>
-        </ul>
+            <li><a type="button" class="mileage">마일리지 내역</a></li>
+            <li><a type="button" class="usage">이용 내역</a></li>
+            <li><a type="button" class="edit-profile">회원정보 변경</a></li>
+        </ul>        
     </nav>
 </aside>

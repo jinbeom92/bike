@@ -3,6 +3,10 @@ import random
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Avg, Count, Sum, F, Q
+from django.utils import timezone
+from datetime import timedelta
+from riding.models import RideHistory, MileageHistory
 
 
 # 인증번호 생성
@@ -58,3 +62,51 @@ def send_verification_for_password_email(email, otp):
     from_email = "enf3194@naver.com"
     recipient_list = [email]
     send_mail(subject, message, from_email, recipient_list)
+
+
+# 평균 값 계산 함수
+def calculate_user_statistics(user):
+    # 현재 마일리지 계산
+    current_mileage = (
+        MileageHistory.objects.filter(user=user).aggregate(
+            total=Sum("amount", filter=Q(transaction_type="적립"))
+            - Sum("amount", filter=Q(transaction_type="사용"))
+        )["total"]
+        or 0
+    )
+
+    # 평균 일일 주행 거리 계산
+    thirty_days_ago = timezone.now().date() - timedelta(days=30)
+    avg_daily_distance = (
+        RideHistory.objects.filter(user=user, ride_date__gte=thirty_days_ago)
+        .values("ride_date")
+        .annotate(daily_distance=Sum("distance"))
+        .aggregate(avg_distance=Avg("daily_distance"))["avg_distance"]
+        or 0
+    )
+
+    # 평균 주행 속도 계산
+    avg_speed = (
+        RideHistory.objects.filter(user=user).aggregate(
+            avg_speed=Avg(F("distance") / (F("usage_time") / 60))  # km/h
+        )["avg_speed"]
+        or 0
+    )
+
+    # 가장 자주 이용한 대여소
+    most_used_station = (
+        RideHistory.objects.filter(user=user)
+        .values("frequent_route")
+        .annotate(count=Count("frequent_route"))
+        .order_by("-count")
+        .first()
+    )
+
+    return {
+        "current_mileage": current_mileage,
+        "avg_daily_distance": round(avg_daily_distance, 2),
+        "avg_speed": round(avg_speed, 2),
+        "most_used_station": (
+            most_used_station["frequent_route"] if most_used_station else None
+        ),
+    }

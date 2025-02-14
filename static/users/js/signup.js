@@ -74,6 +74,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return /^[1-4]$/.test(birthEnd);
     }
 
+    // function isValidBirth(birth, birthEnd) {
+    //     const yearPrefix = birthEnd === "1" || birthEnd === "2" ? "19" : "20";
+    //     const fullYear = parseInt(yearPrefix + birth.substring(0, 2), 10);
+    //     const currentYear = new Date().getFullYear();
+    //     return fullYear >= 1900 && fullYear <= currentYear;
+    // }
+
+    // let debounceTimeout;
+    // usernameInput.addEventListener('input', function() {
+    //     clearTimeout(debounceTimeout);
+    //     debounceTimeout = setTimeout(() => validateUsername(), 500);
+    // });
+
     // 아이디 유효성 검사 및 중복 확인
     async function validateUsername() {
         showMessage(userIdError, ''); // 메시지 초기화

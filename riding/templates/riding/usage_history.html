@@ -30,54 +30,67 @@
             <button class="filter-btn">지난달</button>
             <button class="filter-btn">최근 3개월</button>
         </div>
-        <div class="history-list">
-            <div class="history-item">
-                <div class="date">2025.02.06</div>
-                <hr>
-                <div class="detail">
-                    <div class="info">
-                        <span>이용시간</span>
-                        <span class="value">20</span> <span>분</span>
-                    </div>
-                    <div class="info">
-                        <span>이동거리</span>
-                        <span class="value">20.00</span> <span>KM</span>
-                    </div>
-                    <div class="info">
-                        <span>칼로리</span>
-                        <span class="value">200</span> <span>KCAL</span>
-                    </div>
-                    <div class="info">
-                        <span>경유지</span>
-                        <span class="value">포비 본점</span>
+            <div class="history-list">
+                {% for ride in ride_history %}
+                <div class="history-item">
+                    <div class="date">{{ ride.ride_date }}</div>
+                    <div class="detail">
+                        <div class="info">
+                            <span>이용시간:</span>
+                            <div class="value-container">
+                                <span class="value">{{ ride.usage_time }}</span>
+                                <span class="unit">분</span>
+                            </div>
+                        </div>
+                        <div class="info">
+                            <span>이동거리:</span>
+                            <div class="value-container">
+                                <span class="value">{{ ride.distance }}</span>
+                                <span class="unit">KM</span>
+                            </div>
+                        </div>
+                        <div class="info">
+                            <span>칼로리:</span>
+                            <div class="value-container">
+                                <span class="value">{{ ride.calories }}</span>
+                                <span class="unit">KCAL</span>
+                            </div>
+                        </div>
+                        <div class="info">
+                            <span>경유지:</span>
+                            <span class="value place">{{ ride.frequent_route }}</span>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            <div class="history-item">
-                <div class="date">2025.02.05</div>
-                <hr>
-                <div class="detail">
-                    <div class="info">
-                        <span>이용시간</span>
-                        <span class="value">15</span> <span>분</span>
-                    </div>
-                    <div class="info">
-                        <span>이동거리</span>
-                        <span class="value">10.50</span> <span>KM</span>
-                    </div>
-                    <div class="info">
-                        <span>칼로리</span>
-                        <span class="value">150</span> <span>KCAL</span>
-                    </div>
-                    <div class="info">
-                        <span>경유지</span>
-                        <span class="value">서울역</span>
+        
+            <div class="history-list">
+                {% for history in mileage_history %}
+                <div class="history-item">
+                    <div class="date">{{ history.transaction_date|date:"Y.m.d" }}</div>
+                    <div class="detail">
+                        <div class="info">
+                            <span>거래 유형:</span>
+                            <span class="value">{{ history.transaction_type }}</span>
+                        </div>
+                        <div class="info">
+                            <span>마일리지:</span>
+                            <div class="value-container">
+                                <span class="value">{{ history.amount }}</span>
+                                <span class="unit">점</span>
+                            </div>
+                        </div>
+                        <div class="info">
+                            <span>설명:</span>
+                            <span class="value">{{ history.description }}</span>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
-        <button class="save-btn">저장하기</button>
     </div>
-    <script src="{% static 'riding/js/usage_history.js' %}"></script>
+    <script src="{% static 'riding/js/map_main.js' %}"></script>
 </body>
 </html>

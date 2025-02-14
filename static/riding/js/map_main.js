@@ -9,23 +9,46 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     map.setOptions({
-        scrollwheel: true, // 스크롤 줌 활성화 여부
-        draggable: true,   // 지도 드래그 가능 여부
+        scrollwheel: true,
+        draggable: true,
     });
 
+    // 🌟 마커 이미지 경로 설정
+    const markerImages = {
+        max: '/static/riding/images/max-logo.png',
+        mean: '/static/riding/images/mean-logo.png',
+        min: '/static/riding/images/min-logo.png'
+    };
+
     // 🌟 자전거 대여소 마커 추가
-    if (typeof bikeLocations !== "undefined" && Array.isArray(bikeLocations)) {
-        bikeLocations.forEach(location => {
-            new Tmapv2.Marker({
-                position: new Tmapv2.LatLng(location.위도, location.경도),
-                map: map,
-                title: location["대여소명"]
+    function addBikeMarkers() {
+        if (typeof bikeLocations !== "undefined" && Array.isArray(bikeLocations)) {
+            bikeLocations.forEach(location => {
+                const occupancyRate = parseFloat(location.거치율);
+                let markerImage;
+
+                if (70 > occupancyRate > 130) {
+                    markerImage = markerImages.max;
+                } else if (30 > occupancyRate >= 70) {
+                    markerImage = markerImages.mean;
+                } else {
+                    markerImage = markerImages.min;
+                }
+
+                new Tmapv2.Marker({
+                    position: new Tmapv2.LatLng(location.위도, location.경도),
+                    icon: markerImage,
+                    map: map,
+                    title: location.대여소명
+                });
             });
-        });
-        console.log("🚲 자전거 대여소 마커 추가 완료");
-    } else {
-        console.error("❌ bikeLocations 데이터가 정의되지 않았거나 배열이 아닙니다.");
+            console.log("🚲 자전거 대여소 마커 추가 완료");
+        } else {
+            console.error("❌ bikeLocations 데이터가 정의되지 않았거나 배열이 아닙니다.");
+        }
     }
+
+    addBikeMarkers();
 
     // 🌟 현재 위치 마커 (전역 변수)
     let myLocationMarker = null;
@@ -48,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 myLocationMarker = new Tmapv2.Marker({
                     position: new Tmapv2.LatLng(lat, lng),
-                    icon: myLocationIcon, // Django에서 전달된 이미지 경로
+                    icon: myLocationIcon,
                     iconSize: new Tmapv2.Size(15, 15),
                     map: map
                 });
@@ -68,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (locationButton) {
         locationButton.addEventListener("click", function () {
             console.log("📍 위치 버튼 클릭됨!");
-            console.log("📍 내 위치 아이콘 경로:", myLocationIcon); // 아이콘 경로 확인
+            console.log("📍 내 위치 아이콘 경로:", myLocationIcon);
             updateCurrentLocation();
         });
     } else {
@@ -77,30 +100,93 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-// 사이드바
+// 🚀 **사이드바 및 사용자 정보 로드**
 document.addEventListener("DOMContentLoaded", function () {
-    // 사이드바 관련 요소 선택
+    console.log("📡 사이드바 및 사용자 정보 로드 시작");
+
+    // 🌟 사이드바 관련 요소 선택
     const menuButton = document.getElementById("menu-button");
     const sidebar = document.getElementById("sidebar");
+    const mileageButton = document.querySelector(".mileage");
+    const usageButton = document.querySelector(".usage");
+    const editProfileButton = document.querySelector(".edit-profile");
 
+    // 📌 요소가 없을 경우 경고 출력 후 함수 종료
     if (!menuButton || !sidebar) {
-        console.error("메뉴 버튼 또는 사이드바 요소를 찾을 수 없습니다.");
+        console.error("❌ 메뉴 버튼 또는 사이드바 요소를 찾을 수 없습니다.");
         return;
     }
 
-    // 메뉴 버튼 클릭 시 사이드바 열기
+    // 🚀 **사이드바 열기**
     menuButton.addEventListener("click", function (event) {
         event.stopPropagation(); // 부모 요소로의 이벤트 전파 방지
         sidebar.classList.add("active"); // 사이드바 활성화
+        console.log("📍 메뉴 버튼 클릭됨!");
     });
 
-    // 외부 클릭 시 사이드바 닫기
+    // 🚪 **외부 클릭 시 사이드바 닫기**
     document.addEventListener("click", function (event) {
         if (!sidebar.contains(event.target) && !menuButton.contains(event.target)) {
             sidebar.classList.remove("active"); // 사이드바 닫기
         }
     });
+
+    // 📌 **클릭 시 페이지 이동 (Django URL 패턴 적용)**
+    if (mileageButton) {
+        mileageButton.addEventListener("click", function () {
+            window.location.href = "/riding/mileage_history/";
+        });
+    }
+
+    if (usageButton) {
+        usageButton.addEventListener("click", function () {
+            window.location.href = "/riding/usage_history/";
+        });
+    }
+
+    if (editProfileButton) {
+        editProfileButton.addEventListener("click", function () {
+            window.location.href = "/riding/users_info_edit/";
+        });
+    }
+
+    // 🚀 **사용자 정보 불러오기 (사이드바 데이터)**
+    loadUserSidebarInfo();
 });
+
+// 🚀 **사용자 사이드바 정보 로드 함수**
+function loadUserSidebarInfo() {
+    fetch("/riding/api/sidebar-info/")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("✅ 사용자 정보 로드 성공:", data);
+
+            // 🌟 요소 존재 여부 확인 후 업데이트
+            updateSidebarInfo(".user-name .name", data.user_name);
+            updateSidebarInfo(".stat-value .value.monthly-distance", data.monthly_distance + " KM");
+            updateSidebarInfo(".stat-value .value.average-speed", data.average_speed + " KM/H");
+            updateSidebarInfo(".stat-value .value.total-mileage", data.total_mileage + " M");
+            updateSidebarInfo(".rental-location", data.most_used_station);
+        })
+        .catch(error => {
+            console.error("🚨 사용자 정보 로드 실패:", error);
+        });
+}
+
+// 🚀 **사이드바 정보 업데이트 함수 (중복 코드 최소화)**
+function updateSidebarInfo(selector, value) {
+    const element = document.querySelector(selector);
+    if (element) {
+        element.innerText = value;
+    }
+}
+
+
 
 /* 시간 드롭업 */
 document.addEventListener("DOMContentLoaded", function () {
@@ -145,5 +231,48 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+// 🚴‍♂️ 라이딩 시작 (start_ride API 호출)
+function startRide() {
+    fetch("/start_ride/", { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            alert("🚲 라이딩 시작! 시간: " + data.ride_start_time);
+        })
+        .catch(error => console.error("Error starting ride:", error));
+}
 
+// 🚲 라이딩 종료 (end_ride API 호출)
+function endRide(distance, calories, route) {
+    fetch(`/end_ride/?distance=${distance}&calories=${calories}&route=${route}`, { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            alert("✅ 라이딩 종료! 이동 거리: " + data.total_distance + "KM, 소모 칼로리: " + data.total_calories + "KCAL");
+            loadUserSidebarInfo(); // 📊 UI 업데이트
+        })
+        .catch(error => console.error("Error ending ride:", error));
+}
 
+// 💰 마일리지 적립 (add_mileage API 호출)
+function addMileage(mileage) {
+    fetch(`/add_mileage/?mileage=${mileage}`, { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            alert("✅ 마일리지 적립 완료! 총 마일리지: " + data.total_mileage);
+            loadUserSidebarInfo(); // 📊 UI 업데이트
+        })
+        .catch(error => console.error("Error adding mileage:", error));
+}
+
+// 🔻 마일리지 사용 (use_mileage API 호출)
+function useMileage(mileage) {
+    fetch(`/use_mileage/?mileage=${mileage}`, { method: "POST" })
+        .then(response => response.json())
+        .then(data => {
+            alert("✅ 마일리지 사용 완료! 남은 마일리지: " + data.total_mileage);
+            loadUserSidebarInfo(); // 📊 UI 업데이트
+        })
+        .catch(error => {
+            console.error("Error using mileage:", error);
+            alert("🚨 마일리지가 부족합니다.");
+        });
+}

@@ -22,7 +22,7 @@ urlpatterns = [
     # Django 관리자 페이지
     path("admin/", admin.site.urls),
     # users 앱 URL
-    path("", include("users.urls", namespace="users")),
+    path("", include("users.urls")),
     # riding 앱의 URL 패턴
-    path("riding/", include("riding.urls", namespace="riding")),
+    path("riding/", include("riding.urls")),
 ]

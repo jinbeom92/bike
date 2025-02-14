@@ -21,8 +21,10 @@ from .utils import (
     send_verification_email,
     send_verification_for_id_email,
     send_verification_for_password_email,
+    calculate_user_statistics,
 )
 from smtplib import SMTPException
+
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
@@ -277,3 +279,15 @@ def reset_password_view(request):
     else:
         form = ResetPasswordForm()
         return render(request, "users/reset_password.html", {"form": form})
+
+
+# 평균 값 계산 뷰
+def user_statistics(request):
+    user = request.user
+    profile = Profile.objects.get(user=user)
+
+    statistics = calculate_user_statistics(user)
+
+    context = {"profile": profile, **statistics}
+
+    return render(request, "user_statistics.html", context)

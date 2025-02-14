@@ -1,6 +1,6 @@
 {% load static %}
 <script>
-    var myLocationIcon = "{% static 'riding/images/my_location.logo.png' %}";
+    var myLocationIcon = "{% static 'riding/images/my_location-logo.png' %}";
 </script>
 <!DOCTYPE html>
 <html lang="ko">
@@ -15,13 +15,13 @@
         <div class="container">
             <!-- 메뉴 버튼 -->
             <button class="nav-button" aria-label="메뉴 열기" id="menu-button"></button>
-            <img class="menu-logo" src="{% static 'riding/images/menu-logo.png' %}" alt="메뉴 아이콘" /></img>
+            <img class="menu-logo" src="{% static 'riding/images/menu-logo.png' %}" alt="메뉴 아이콘" />
             <!-- 시간 선택 버튼 -->
             <button class="time-button" id="time-button" aria-label="시간 선택"></button>
-            <img class="time-logo" src="{% static 'riding/images/time-logo.png' %}" alt="시간 아이콘" /></img>
+            <img class="time-logo" src="{% static 'riding/images/time-logo.png' %}" alt="시간 아이콘" />
             <!-- 위치 보기 버튼 -->
             <button class="location-button" id="location-button" aria-label="위치 보기"></button>
-            <img class="location-logo" src="{% static 'riding/images/find-location-logo.png' %}" alt="위치 아이콘" /></img>
+            <img class="location-logo" src="{% static 'riding/images/find-location-logo.png' %}" alt="위치 아이콘" />
 
             <!-- 사용자 프로필 사이드바 불러오기 -->
             {% include 'riding/user_sidebar.html' %}
@@ -48,6 +48,7 @@
         const parkLocations = {{ park_locations|safe }};
         const museumLocations = {{ museum_locations|safe }};
         const restaurantLocations = {{ restaurant_locations|safe }};
+        console.log("🚲 bikeLocations 데이터:", {{ bike_locations|safe }});
     </script>
     <script src="{% static 'riding/js/map_main.js' %}"></script>
 </body>

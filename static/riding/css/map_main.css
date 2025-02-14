@@ -251,7 +251,7 @@ body {
   font-weight: 800;
   color: #352555; /* text-indigo-950 */
   cursor: pointer;
-  padding: 13px 0; /* 위아래 간격 조정 */
+  margin-top: 20px;
 }
 
 .user-menu li a {
@@ -353,7 +353,7 @@ body {
     padding: 20px; /* 패딩 조정 */
   }
 
-  /* 메뉴 버튼 (햄버거 아이콘) */
+  /* 메뉴 버튼 */
   .nav-button {
     top: 20px;
     right: 10px;
