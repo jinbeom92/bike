@@ -13,4 +13,5 @@ urlpatterns = [
     path("end_ride/", views.end_ride, name="end_ride"),
     path("add_mileage/", views.add_mileage, name="add_mileage"),
     path("use_mileage/", views.use_mileage, name="use_mileage"),
+    path("calculate-route/", views.calculate_route, name="calculate_route"),
 ]

@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{% static 'riding/css/map_main.css' %}" />
 </head>
 <body>
+    {% csrf_token %}
     <main class="main">
         <div class="container">
             <!-- 메뉴 버튼 -->
@@ -30,7 +31,7 @@
             {% include 'riding/time_dropdown.html' %}
 
             <!-- 참여 드롭업 불러오기 -->
-            {% comment %} {% include 'riding/people.html' %}s {% endcomment %}
+            {% include 'riding/people.html' %}
 
             <!-- 오버레이 -->
             <div id="overlay" class="overlay"></div>

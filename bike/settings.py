@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     "users",
     "riding",
     "django_extensions",
-    'rest_framework',
+    "rest_framework",
 ]
 
 MIDDLEWARE = [

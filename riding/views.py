@@ -11,13 +11,12 @@ from django.shortcuts import render
 from django.conf import settings
 from users.models import Profile
 from riding.models import RideHistory, MileageHistory
-
+from .utils import calculate_path_distance
 from users.utils import (
     calculate_monthly_distance,
     calculate_average_speed,
     calculate_total_mileage,
     update_most_used_station,
-    calculate_calories,
 )
 
 # 서울 공공자전거 API 키
@@ -142,6 +141,60 @@ def map_main_view(request):
 
     # 지도 페이지 렌더링
     return render(request, "riding/map_main.html", context)
+
+
+# 경로 거리 뷰
+def calculate_route(request):
+    if request.method == "POST":
+        try:
+            # POST 데이터에서 좌표 받기
+            data = request.POST
+            start_lat = data.get("startLat")
+            start_lng = data.get("startLng")
+            end_lat = data.get("endLat")
+            end_lng = data.get("endLng")
+
+            # T map API 호출
+            headers = {"appKey": TMAP_API_KEY}  # 기존에 정의된 API 키 사용
+
+            api_url = "https://apis.openapi.sk.com/tmap/routes/pedestrian"
+            params = {
+                "version": "1",
+                "format": "json",
+                "startX": start_lng,
+                "startY": start_lat,
+                "endX": end_lng,
+                "endY": end_lat,
+                "startName": "출발지",
+                "endName": "도착지",
+            }
+
+            response = requests.post(api_url, headers=headers, params=params)
+            route_data = response.json()
+
+            if "features" in route_data:
+                # utils.py의 거리 계산 함수 사용
+                distance = calculate_path_distance(route_data["features"])
+
+                return JsonResponse(
+                    {
+                        "status": "success",
+                        "distance": distance,
+                        "path": route_data["features"],
+                    }
+                )
+            else:
+                return JsonResponse(
+                    {"status": "error", "message": "경로를 찾을 수 없습니다."},
+                    status=404,
+                )
+
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+    return JsonResponse(
+        {"status": "error", "message": "잘못된 요청입니다."}, status=400
+    )
 
 
 # 사이드바 뷰

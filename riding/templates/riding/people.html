@@ -1,63 +1,68 @@
-    <!-- 모임 참여 드롭업 -->
-    <div class="group-info-container" id="group-info">
-        <div class="group-info">
-            <div class="header">
-                <div class="header-bar"></div>
-                <div class="title">모임 정보 확인</div>
-            </div>
-
-            <div class="group-details">
-                <div class="group-info-item">
-                    <span class="info-title">출발 시간:</span>
-                    <span class="info-value">텍스트 1</span>
-                </div>
-                <div class="group-info-item">
-                    <span class="info-title">출발지:</span>
-                    <span class="info-value" id="departure">텍스트 1</span>
-                </div>
-                <div class="group-info-item">
-                    <span class="info-title">경유지:</span>
-                    <span class="info-value" id="waypoint">텍스트 1</span>
-                </div>
-                <div class="group-info-item">
-                    <span class="info-title">도착지:</span>
-                    <span class="info-value" id="destination">텍스트 1</span>
-                </div>
-            </div>
-
-            <!-- 참여자 현황 -->
-            <div class="participant-status">
-                <div class="status-header">참여 현황: <span id="participant-count">3</span>/5</div>
-                <div class="participant-list" id="participant-list">
-                    <div class="participant">닉네임 1</div>
-                    <div class="participant">닉네임 2</div>
-                    <div class="participant">닉네임 3</div>
-                    <div class="participant empty">None</div>
-                    <div class="participant empty">None</div>
-                </div>
-            </div>
-
-            <!-- 경로 및 예상 정보 -->
-            <div class="route-info">
-                <div class="route-item">
-                    <img src="{% static 'riding/images/start-end-logo.png' %}" alt="시작 끝 아이콘">
-                </div>
-                <div class="route-item">
-                    <img src="{% static 'riding/images/total-load-logo.png' %}" alt="총 이동거리 아이콘">
-                    <span class="info-value">텍스트 1</span>
-                </div>
-                <div class="route-item">
-                    <img src="{% static 'riding/images/total-time-logo.png' %}" alt="총 소요시간 아이콘">
-                    <span class="info-value">텍스트 1</span>
-                </div>
-                <div class="route-item">
-                    <img src="{% static 'riding/images/fast-load-logo.png' %}" alt="최단 거리 아이콘">
-                </div>
-            </div>
-
-            <!-- 모임 참여 버튼 -->
-            <button class="join-btn" id="join-group">
-                <img src="{% static 'riding/images/party-join-logo.png' %}" alt="참여 아이콘">
-            </button>
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'riding/css/people.css' %}" />
+</head>
+<div class="group-info-container" id="group-info">
+    <!-- 경로 및 예상 정보 -->
+    <div class="route-info">
+        <div class="route-item">
+            <img src="{% static 'riding/images/total-load-logo.png' %}" class="total-logo" alt="총 이동거리 아이콘">
+            <span class="value">{{ distance }}</span>
+            <span class="unit">km</span>
+        </div>
+        <div class="route-item">
+            <img src="{% static 'riding/images/total-time-logo.png' %}" class="total-logo" alt="총 소요시간 아이콘">
+            <span class="value">70</span>
+            <span class="unit">min</span>
+        </div>
+        <div class="route-item">
+            <img src="{% static 'riding/images/fast-load-logo.png' %}" class="total-logo" alt="최단 거리 아이콘">
+            <span class="value">최단거리</span>
         </div>
     </div>
+
+    <!-- 출발 시간 -->
+    <div class="start-time">
+        <span class="time-title">출발</span>
+        <img src="{% static 'riding/images/start-time-logo.png' %}" alt="출발 시간 아이콘">
+        <span class="time-value">09:00</span>
+    </div>
+
+    <!-- 그룹 상세 정보 -->
+    <div class="group-details">
+        <div class="group-info-item">
+            <img class="startend" src="{% static 'riding/images/start-logo.png' %}" alt="출발지 아이콘">
+            <span class="start-load-value" id="departure">4826. 홈플러스 면목점</span>
+        </div>
+        <div class="group-info-item">
+            <img class="startend" src="{% static 'riding/images/middle-logo.png' %}" alt="경유지 아이콘">
+            <span class="middle-load-value" id="waypoint">포비 본점</span>
+        </div>
+        <div class="group-info-item">
+            <img class="startend" src="{% static 'riding/images/end-logo.png' %}" alt="도착지 아이콘">
+            <span class="end-load-value" id="destination">589. 성수역3번출구</span>
+        </div>
+    </div>
+
+    <!-- 참여자 현황 -->
+    <div class="participant-status">
+        <div class="status-header">참여현황: <span id="participant-count">3</span>/5</div>
+        <div class="participant-list" id="participant-list">
+            <div class="participant">라이딩천재</div>
+            <div class="participant">따릉이왕</div>
+            <div class="participant">햇살폭주족</div>
+            <div class="participant empty">None</div>
+            <div class="participant empty">None</div>
+        </div>
+    </div>
+
+    <!-- 모임 참여 버튼 -->
+    <button class="join-btn" id="join-group">
+        <img src="{% static 'riding/images/party-join-logo.png' %}" alt="모임 참여 버튼">
+    </button>
+</div>
+

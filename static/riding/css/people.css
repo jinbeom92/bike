@@ -1,0 +1,187 @@
+/* 모임 참여 드롭업 컨테이너 */
+.group-info-container {
+  position: absolute;
+  width: 100%;
+  max-width: 405px;
+  height: 380px;
+  left: 50%;
+  bottom: -100%;
+  transform: translateX(-50%);
+  background-color: white;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: none; /* 초기 상태는 display: none */
+  flex-direction: column;
+  padding: 16px;
+  z-index: 10;
+  transition: bottom 0.3s ease-in-out;
+}
+
+.group-info-container.active {
+  display: flex;
+  bottom: 0;
+}
+
+/* 경로 및 예상 정보 */
+.route-info {
+  width: 100%;
+  height: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 20px;
+}
+
+/* 이미지 */
+.route-item {
+  flex: 1;
+  height: 32px;
+  padding: 6px 8px;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid rgba(196, 196, 196, 0.54);
+  display: flex;
+  align-items: center;
+}
+
+/* 이미지 크기 */
+.total-logo {
+  width: 18px;
+  height: 18px;
+}
+
+/* 값 스타일링 */
+.route-item .value {
+  color: rgba(53, 37, 85, 0.75);
+  font-size: 15px;
+  font-family: Pretendard, sans-serif;
+  font-weight: bold;
+  text-align: center; /* 중앙 정렬 */
+  flex-grow: 1; /* 공간을 차지하여 중앙에 위치 */
+}
+
+/* 단위 스타일링 */
+.route-item .unit {
+  color: #40B59F;
+  font-size: 15px;
+  font-family: Pretendard, sans-serif;
+  font-weight: bold;
+}
+
+/* 출발 시간 */
+.start-time {
+    display: flex; /* 가로 정렬 */
+    align-items: center; /* 세로 정렬 */
+    gap: 5px; /* 요소 간 간격 */
+    margin-bottom: 8px;
+}
+
+.start-time img {
+    width: 18px;
+    height: 18px;
+}
+
+.time-title {
+    color: #352555;
+    font-family: Pretendard, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 16.32px; /* 텍스트 높이 */
+}
+
+.time-value {
+    color: #97ADB6;
+    font-family: Pretendard, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16.8px; /* 텍스트 높이 */
+}
+
+/* 그룹 상세 정보 */
+.group-details {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* 각 아이템 사이 간격 */
+}
+
+.group-info-item {
+  display: flex;
+  align-items: center; /* 세로 중앙 정렬 */
+  gap: 12px; /* 이미지와 텍스트 사이 간격 */
+}
+
+.group-info-item img.startend {
+  width: 32px; /* 이미지 크기 */
+  height: 32px;
+  border-radius: 50%; /* 원형 이미지 */
+}
+
+.group-info-item span {
+  font-size: 15px;
+  color: #352555;
+  line-height: 1.2;
+}
+
+
+/* 참여자 현황 */
+.participant-status {
+  margin-bottom: 20px;
+  overflow: hidden; /* 내부 스크롤을 위한 오버플로우 제어 */
+}
+
+.status-header {
+  font-size: 12px;
+  color: #97ADB6;
+  margin-bottom: 10px;
+}
+
+/* 참여자 리스트 스타일 */
+.participant-list {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto; /* 가로 스크롤 활성화 */
+  white-space: nowrap; /* 가로로 나열 */
+  -webkit-overflow-scrolling: touch; /* 모바일 스크롤 부드럽게 */
+  scrollbar-width: none; /* Firefox 스크롤바 숨기기 */
+  -ms-overflow-style: none; /* IE/Edge 스크롤바 숨기기 */
+  padding-bottom: 10px; /* 스크롤바 공간 확보 */
+}
+
+/* Webkit 브라우저용 스크롤바 숨기기 */
+.participant-list::-webkit-scrollbar {
+  display: none;
+}
+
+.participant {
+  padding: 6px 16px;
+  height: 28px;
+  font-size: 13px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #352555;
+  color: white;
+  flex-shrink: 0; /* 요소가 줄어들지 않도록 설정 */
+}
+
+.participant.empty {
+  background: #F5F5F5;
+  color: #97ADB6;
+}
+
+/* 모임 참여 버튼 */
+.join-btn {
+  width: 142px;
+  height: 38px;
+  margin: 0 auto;
+  background: white;
+  border: 1px solid rgba(229, 229, 229, 0.54);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

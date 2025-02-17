@@ -1,5 +1,14 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'riding/css/time_dropdown.css' %}" />
+</head>
 <!-- 시간 선택 드롭업 -->
 <div class="time-dropdown" id="time-dropdown">
+    <div class="time-selection__title">대여 시간 선택</div>
     <ul class="time-selection__list">
         <li class="time-selection__item"><time>09 : 00</time></li>
         <li class="time-selection__item"><time>10 : 00</time></li>

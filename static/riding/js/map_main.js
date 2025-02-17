@@ -1,5 +1,11 @@
+// 전역 변수 설정 부분에 드롭업 참조 추가
+let groupInfoDropup = null;
+
 document.addEventListener("DOMContentLoaded", function () {
     console.log("🌍 지도 및 위치 기능 초기화 시작");
+
+    // groupInfoDropup 초기화
+    groupInfoDropup = document.querySelector('.group-info-container');
 
     // 🌟 지도 초기화
     let map = new Tmapv2.Map("map_div", {
@@ -20,6 +26,12 @@ document.addEventListener("DOMContentLoaded", function () {
         min: '/static/riding/images/min-logo.png'
     };
 
+    // 전역 변수 설정
+    let startPoint = null;
+    let endPoint = null;
+    let polyline = null;
+    let currentTouchHandler = null;
+
     // 🌟 자전거 대여소 마커 추가
     function addBikeMarkers() {
         if (typeof bikeLocations !== "undefined" && Array.isArray(bikeLocations)) {
@@ -27,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const occupancyRate = parseFloat(location.거치율);
                 let markerImage;
 
-                if (occupancyRate >= 130 ) {
+                if (occupancyRate >= 130) {
                     markerImage = markerImages.max;
                 } else if (occupancyRate > 30 && occupancyRate < 130) {
                     markerImage = markerImages.mean;
@@ -35,25 +47,183 @@ document.addEventListener("DOMContentLoaded", function () {
                     markerImage = markerImages.min;
                 }
 
-                new Tmapv2.Marker({
+                const marker = new Tmapv2.Marker({
                     position: new Tmapv2.LatLng(location.위도, location.경도),
                     icon: markerImage,
                     map: map,
                     title: location.대여소명
                 });
+
+                marker.addListener("click", function () {
+                    handleMarkerClick(location.위도, location.경도);
+                });
             });
             console.log("🚲 자전거 대여소 마커 추가 완료");
-        } else {
-            console.error("❌ bikeLocations 데이터가 정의되지 않았거나 배열이 아닙니다.");
         }
     }
 
+    // 🌟 출발점/도착점 설정 및 경로 검색 함수
+    function handleMarkerClick(latitude, longitude) {
+        if (!startPoint) {
+            startPoint = {
+                lat: latitude,
+                lng: longitude
+            };
+            console.log("📍 출발점 설정:", startPoint);
+            alert("출발점이 설정되었습니다.");
+        } else if (!endPoint) {
+            endPoint = {
+                lat: latitude,
+                lng: longitude
+            };
+            console.log("📍 도착점 설정:", endPoint);
+            alert("도착점이 설정되었습니다.");
+
+            findPath(startPoint.lat, startPoint.lng, endPoint.lat, endPoint.lng);
+        }
+    }
+
+    // 🌟 경로 검색 함수 (Django 백엔드 호출)
+    function findPath(startLat, startLng, endLat, endLng) {
+        const data = new FormData();
+        data.append('startLat', startLat);
+        data.append('startLng', startLng);
+        data.append('endLat', endLat);
+        data.append('endLng', endLng);
+    
+        fetch('/riding/calculate-route/', {
+            method: 'POST',
+            body: data,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                drawPath(data.path);
+                // 거리 값을 표시할 특정 요소 선택
+                const distanceElement = document.querySelector('.route-info .route-item:first-child .value');
+                if (distanceElement) {
+                    distanceElement.textContent = data.distance;
+                }
+            } else {
+                console.error("❌ 경로 데이터를 가져오지 못했습니다.");
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error("❌ 경로 검색 중 오류 발생:", error);
+            alert("경로 검색 중 오류가 발생했습니다.");
+        });
+    }
+
+
+
+    // 🌟 지도에 경로 그리기
+    function drawPath(pathData) {
+        if (!pathData || !Array.isArray(pathData)) {
+            console.error("경로 데이터가 없습니다");
+            return;
+        }
+    
+        // 기존 경로 제거
+        if (polyline) {
+            polyline.setMap(null);
+        }
+    
+        let linePath = [];
+        pathData.forEach(path => {
+            if (path.geometry.type === "LineString") {
+                path.geometry.coordinates.forEach(coord => {
+                    linePath.push(new Tmapv2.LatLng(coord[1], coord[0]));
+                });
+            }
+        });
+    
+        // 새 경로 그리기
+        polyline = new Tmapv2.Polyline({
+            path: linePath,
+            strokeColor: "#FF7F00",
+            strokeWeight: 7,
+            map: map
+        });
+    
+        // 드롭업 표시
+        showGroupInfoDropup();
+    }
+    
+
+    // 모임 정보 드롭업 표시 함수
+    function showGroupInfoDropup() {
+        if (groupInfoDropup) {
+            // 기존 이벤트 리스너 제거
+            if (currentTouchHandler) {
+                document.removeEventListener('touchstart', currentTouchHandler);
+                document.removeEventListener('click', currentTouchHandler);
+                currentTouchHandler = null;
+            }
+
+            // 드롭업 표시
+            groupInfoDropup.style.display = 'flex';
+            groupInfoDropup.style.bottom = '-100%';
+            
+            // 강제 리플로우 발생
+            groupInfoDropup.offsetHeight;
+            
+            // 애니메이션 적용
+            groupInfoDropup.classList.add("active");
+            groupInfoDropup.style.bottom = '0';
+            
+            console.log('모임 정보 열림');
+
+            // 새로운 이벤트 리스너 추가
+            currentTouchHandler = (event) => {
+                if (!groupInfoDropup.contains(event.target)) {
+                    closeGroupInfoDropup();
+                }
+            };
+
+            document.addEventListener('touchstart', currentTouchHandler);
+            document.addEventListener('click', currentTouchHandler);
+        }
+    }
+
+    // 모임 정보 드롭업 닫기 함수
+    function closeGroupInfoDropup() {
+        if (groupInfoDropup) {
+            groupInfoDropup.style.bottom = '-100%';
+            
+            setTimeout(() => {
+                groupInfoDropup.classList.remove("active");
+                groupInfoDropup.style.display = 'none';
+                
+                // 경로 초기화
+                if (polyline) {
+                    polyline.setMap(null);
+                    polyline = null;
+                }
+                
+                // 출발점, 도착점 초기화
+                startPoint = null;
+                endPoint = null;
+                
+                // 이벤트 리스너 제거
+                if (currentTouchHandler) {
+                    document.removeEventListener('touchstart', currentTouchHandler);
+                    document.removeEventListener('click', currentTouchHandler);
+                    currentTouchHandler = null;
+                }
+            }, 300);
+        }
+    }
+
+    // 초기화 함수 호출
     addBikeMarkers();
 
-    // 🌟 현재 위치 마커 (전역 변수)
+    // 현재 위치 관련 코드는 그대로 유지
     let myLocationMarker = null;
 
-    // 🌟 현재 위치 이동 기능
     function updateCurrentLocation() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(position => {
@@ -61,10 +231,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const lng = position.coords.longitude;
                 console.log(`📍 현재 위치: 위도 ${lat}, 경도 ${lng}`);
 
-                // 📌 지도 중심 이동
                 map.setCenter(new Tmapv2.LatLng(lat, lng));
 
-                // 📌 기존 마커 제거 후 새 마커 추가
                 if (myLocationMarker) {
                     myLocationMarker.setMap(null);
                 }
@@ -86,7 +254,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // 🌟 위치 버튼 이벤트 리스너 추가
     let locationButton = document.getElementById("location-button");
     if (locationButton) {
         locationButton.addEventListener("click", function () {
@@ -94,10 +261,9 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("📍 내 위치 아이콘 경로:", myLocationIcon);
             updateCurrentLocation();
         });
-    } else {
-        console.error("❌ 'location-button'을 찾을 수 없습니다. HTML을 확인하세요.");
     }
 });
+
 
 
 // 🚀 **사이드바 및 사용자 정보 로드**
@@ -215,47 +381,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-/* 시간 드롭업 */
-document.addEventListener("DOMContentLoaded", function () {
-    const timeDropdown = document.getElementById("time-dropdown"); // 드롭업 컨테이너
-    const timeButton = document.getElementById("time-button"); // 시간 선택 버튼
-    const timeItems = document.querySelectorAll(".time-selection__item"); // 개별 시간 항목
-    const closeBar = document.querySelector(".close-bar"); // 닫기 바
-
-    if (!timeDropdown || !timeButton) {
-        console.error("드롭업 또는 버튼 요소를 찾을 수 없습니다.");
-        return;
-    }
-
-    // ⏰ 드롭업 열기/닫기 토글 함수 (바닥에서 올라옴)
-    function toggleTimeDropdown() {
-        timeDropdown.classList.toggle("active"); // 드롭업 활성화/비활성화
-    }
-
-    // 🖱️ 시간 선택 기능
-    function selectTime(event) {
-        // 기존 선택된 항목에서 'selected' 클래스 제거
-        timeItems.forEach(item => item.classList.remove("selected"));
-        // 클릭한 항목에 'selected' 클래스 추가
-        event.target.classList.add("selected");
-
-        // 드롭업 닫기
-        timeDropdown.classList.remove("active");
-    }
-
-    // ❌ 외부 클릭 시 드롭업 닫기
-    function closeDropdownOnClickOutside(event) {
-        if (!timeDropdown.contains(event.target) && event.target !== timeButton) {
-            timeDropdown.classList.remove("active");
-        }
-    }
-
-    // 📌 이벤트 리스너 등록
-    timeButton.addEventListener("click", toggleTimeDropdown); // 버튼 클릭 시 드롭업 열기/닫기
-    timeItems.forEach(item => item.addEventListener("click", selectTime)); // 각 시간 항목 클릭 시 선택
-    document.addEventListener("click", closeDropdownOnClickOutside); // 외부 클릭 시 드롭업 닫기
-    closeBar.addEventListener("click", toggleTimeDropdown); // 닫기 바 클릭 시 드롭업 닫기
-});
 
 
 // 🚴‍♂️ 라이딩 시작 (start_ride API 호출)
