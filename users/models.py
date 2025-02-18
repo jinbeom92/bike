@@ -19,7 +19,7 @@ class Profile(models.Model):
     current_mileage = models.IntegerField(default=0)  # 현재 보유 마일리지
     average_daily_distance = models.DecimalField(
         max_digits=8, decimal_places=2, default=0.00
-    )  # 평균 일일 주행 거리 (km)
+    )  # 총 주행 거리 (km)
     average_speed = models.DecimalField(
         max_digits=5, decimal_places=2, default=0.00
     )  # 평균 주행 속도 (km/h)

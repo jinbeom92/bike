@@ -64,31 +64,6 @@
                 </div>
                 {% endfor %}
             </div>
-        
-            <div class="history-list">
-                {% for history in mileage_history %}
-                <div class="history-item">
-                    <div class="date">{{ history.transaction_date|date:"Y.m.d" }}</div>
-                    <div class="detail">
-                        <div class="info">
-                            <span>거래 유형:</span>
-                            <span class="value">{{ history.transaction_type }}</span>
-                        </div>
-                        <div class="info">
-                            <span>마일리지:</span>
-                            <div class="value-container">
-                                <span class="value">{{ history.amount }}</span>
-                                <span class="unit">점</span>
-                            </div>
-                        </div>
-                        <div class="info">
-                            <span>설명:</span>
-                            <span class="value">{{ history.description }}</span>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
         </div>
     </div>
     <script src="{% static 'riding/js/map_main.js' %}"></script>

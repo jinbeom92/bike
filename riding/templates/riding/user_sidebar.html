@@ -25,8 +25,8 @@
             <h2 class="stat-title">평균 주행 속도</h2>
             <p class="stat-value">
                 <span class="value">
-                    {% if user.profile.average_distance > 0 %}
-                        {{ user.profile.average_distance }}
+                    {% if user.profile.average_speed > 0 %}
+                        {{ user.profile.average_speed }}
                     {% else %}
                         0.00
                     {% endif %}

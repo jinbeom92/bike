@@ -3,15 +3,28 @@ import json
 import os
 import re
 import requests
+from django.utils import timezone
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.utils.timezone import now
 from django.shortcuts import render
 from django.conf import settings
+from .forms import UserInfoEditForm
+from users.utils import (
+    generate_otp,
+    save_otp_to_cache,
+    verify_otp,
+    send_user_info_edit_email,
+)
+from .models import RideHistory, MileageHistory
+from .utils import (
+    calculate_path_distance,
+    calculate_mileage_for_station,
+    update_daily_mileage,
+    calculate_estimated_time,
+)
 from users.models import Profile
-from riding.models import RideHistory, MileageHistory
-from .utils import calculate_path_distance
 from users.utils import (
     calculate_monthly_distance,
     calculate_average_speed,
@@ -173,16 +186,26 @@ def calculate_route(request):
             route_data = response.json()
 
             if "features" in route_data:
-                # utils.py의 거리 계산 함수 사용
+                # 거리 계산
                 distance = calculate_path_distance(route_data["features"])
+
+                # 사용자의 실제 평균 속도 계산
+                user_speed = calculate_average_speed(request.user)
+                if user_speed == 0:
+                    user_speed = 12  # 기본 속도 설정
+
+                # 예상 소요 시간 계산
+                estimated_time = calculate_estimated_time(distance, user_speed)
 
                 return JsonResponse(
                     {
                         "status": "success",
                         "distance": distance,
                         "path": route_data["features"],
+                        "estimated_time": estimated_time,
                     }
                 )
+
             else:
                 return JsonResponse(
                     {"status": "error", "message": "경로를 찾을 수 없습니다."},
@@ -287,21 +310,35 @@ def usage_history(request):
 def add_mileage(request):
     """사용자의 마일리지 적립 API"""
     profile = request.user.profile
-    mileage = int(request.GET.get("mileage", 0))
 
-    MileageHistory.objects.create(
-        user=request.user,
-        transaction_date=now(),
-        transaction_type="적립",
-        amount=mileage,
-        description="자전거 이용 보상",
-    )
+    # GET 파라미터에서 거치율 정보 가져오기
+    rental_occupancy = float(request.GET.get("rental_occupancy", 0))
+    return_occupancy = float(request.GET.get("return_occupancy", 0))
 
-    profile.mileage += mileage
-    profile.save()
+    # utils의 함수를 사용하여 마일리지 계산
+    mileage = calculate_mileage_for_station(rental_occupancy, return_occupancy)
+
+    # 일일 한도 체크
+    actual_mileage = update_daily_mileage(request.user, mileage)
+
+    if actual_mileage > 0:
+        MileageHistory.objects.create(
+            user=request.user,
+            transaction_date=timezone.now(),
+            transaction_type="적립",
+            amount=actual_mileage,
+            description="자전거 이용 보상",
+        )
+
+        profile.current_mileage += actual_mileage
+        profile.save()
 
     return JsonResponse(
-        {"message": "마일리지가 적립되었습니다.", "total_mileage": profile.mileage}
+        {
+            "message": "마일리지가 적립되었습니다.",
+            "mileage_earned": actual_mileage,
+            "total_mileage": profile.current_mileage,
+        }
     )
 
 
@@ -338,3 +375,78 @@ def mileage_history(request):
     return render(
         request, "riding/mileage_history.html", {"mileage_history": mileage_history}
     )
+
+
+# 회원정보 변경 뷰
+@login_required
+def users_info_edit(request):
+    return render(request, "riding/users_info_edit.html")
+
+
+# 닉네임 중복 확인 뷰
+@login_required
+def check_nickname(request):
+    nickname = request.GET.get("nickname")
+    is_available = (
+        not Profile.objects.exclude(user=request.user)
+        .filter(nickname=nickname)
+        .exists()
+    )
+    return JsonResponse({"available": is_available})
+
+
+# 이메일 중복 확인 뷰
+@login_required
+def check_email(request):
+    email = request.POST.get("email")
+    is_available = (
+        not Profile.objects.exclude(user=request.user).filter(email=email).exists()
+    )
+    return JsonResponse({"available": is_available})
+
+
+# 인증번호 발송 뷰
+@login_required
+def send_verification(request):
+    email = request.POST.get("email")
+    if not email:
+        return JsonResponse(
+            {"success": False, "message": "이메일이 제공되지 않았습니다."}
+        )
+
+    try:
+        # OTP 생성 및 캐시 저장
+        otp = generate_otp()
+        save_otp_to_cache(email, otp)
+
+        # 이메일 발송
+        send_user_info_edit_email(email, otp)
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)})
+
+
+# 인증번호 확인 뷰
+@login_required
+def verify_code(request):
+    email = request.POST.get("email")
+    code = request.POST.get("code")
+
+    if verify_otp(email, code):
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False})
+
+
+# 회원정보 변경 완료 뷰
+@login_required
+def update_profile(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "message": "잘못된 요청 방식입니다."})
+
+    form = UserInfoEditForm(request.POST, instance=request.user.profile)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({"success": True})
+    else:
+        errors = {field: errors[0] for field, errors in form.errors.items()}
+        return JsonResponse({"success": False, "errors": errors})

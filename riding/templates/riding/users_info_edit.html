@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원정보 변경</title>
+    <link rel="stylesheet" href="{% static 'riding/css/users_info_edit.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- 메뉴 버튼 -->
+        <button class="nav-button" aria-label="메뉴 열기" id="menu-button"></button>
+        <img class="menu-logo" src="{% static 'riding/images/menu-logo.png' %}" alt="메뉴 아이콘" /></img>
+
+        <!-- 사용자 프로필 사이드바 불러오기 -->
+        {% include 'riding/user_sidebar.html' %}
+
+        <div class="header">
+            <h1>회원정보 변경</h1>
+            <div class="divider"></div>
+            <div class="user-info">
+                {% if user.is_authenticated %}
+                    <span class="username">{{ user.profile.nickname }}</span> 님
+                {% endif %}
+            </div>
+        </div>
+        <form id="editForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>닉네임 변경</label>
+                <input type="text" id="userNickname" placeholder="햇살폭주족" required>
+                <div class="error-message" id="userNickError"></div>
+            </div>
+            <div class="form-group">
+                <label>비밀번호 변경</label>
+                <input type="password" id="userPw" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+                <label>비밀번호 확인</label>
+                <input type="password" id="userPwCheck" placeholder="Password" required>
+                <div class="error-message" id="userPwError"></div>
+            </div>
+            <div class="form-group">
+                <label>이메일 변경</label>
+                <div class="email-group">
+                    <input type="email" id="userEmail" placeholder="sample@gmail.com" required>
+                    <button type="button" class="verify-btn">인증번호 발송</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="verification-group">
+                    <input type="text" class="verify-input" maxlength="6" placeholder="인증번호 6자리 입력">
+                    <button type="button" class="email-verify-btn">인증하기</button>
+                </div>
+                <div class="error-message" id="emailVerificationError"></div>
+            </div>
+            <div class="form-group">
+                <label>주 대여소 변경</label>
+                <input type="text" id="userNickname" placeholder="햇살폭주족" required>
+                <div class="error-message" id="userNickError"></div>
+            </div>
+            <div class="form-group">
+                <label>체중(kg)</label>
+                <input type="text" id="userNickname" placeholder="햇살폭주족" required>
+                <div class="error-message" id="userNickError"></div>
+            </div>
+            <button type="submit" class="submit-btn">저장하기</button>
+        </form>
+    </div>
+    <script src="{% static 'riding/js/users_info_edit.js' %}"></script>
+</body>
+</html>

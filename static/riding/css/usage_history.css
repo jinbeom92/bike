@@ -228,12 +228,12 @@ body {
 /* 이용 내역 리스트 */
 .history-list {
   width: 80%; /* 기존 100%에서 80%로 줄이기 */
-    max-width: 300px; /* 최대 너비 설정 (예: 300px) */
-    margin-top: 16px;
-    margin-left: auto; /* 가운데 정렬 */
-    margin-right: auto; /* 가운데 정렬 */
-    max-height: none;
-    overflow-y: visible;
+  max-width: 300px; /* 최대 너비 설정 (예: 300px) */
+  margin-top: 16px;
+  margin-left: auto; /* 가운데 정렬 */
+  margin-right: auto; /* 가운데 정렬 */
+  max-height: none;
+  overflow-y: visible;
 }
 
 .history-item {

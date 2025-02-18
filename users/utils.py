@@ -65,6 +65,15 @@ def send_verification_for_password_email(email, otp):
     send_mail(subject, message, from_email, recipient_list)
 
 
+# 회원정보 변경 메일
+def send_user_info_edit_email(email, otp):
+    subject = "[같이 따릉] 회원정보 변경"
+    message = f"찾아 주셔서 감사합니다.\n인증 코드는 {otp} 입니다."
+    from_email = "enf3194@naver.com"
+    recipient_list = [email]
+    send_mail(subject, message, from_email, recipient_list)
+
+
 # 이번 달 총 주행 거리 계산
 def calculate_monthly_distance(user):
     current_date = timezone.now().date()
@@ -79,16 +88,34 @@ def calculate_monthly_distance(user):
 
     return round(monthly_distance, 2)
 
-
 # 평균 주행 속도
 def calculate_average_speed(user):
-    avg_speed = (
-        RideHistory.objects.filter(user=user).aggregate(
-            avg_speed=Avg(F("distance") / (F("usage_time") / 60))  # km/h
-        )["avg_speed"]
+    # 총 이동 거리와 총 이용 시간 가져오기
+    total_distance = (
+        RideHistory.objects.filter(user=user).aggregate(total_distance=Sum("distance"))[
+            "total_distance"
+        ]
         or 0
     )
-    return round(avg_speed, 2)
+
+    total_usage_time = (
+        RideHistory.objects.filter(user=user).aggregate(total_time=Sum("usage_time"))[
+            "total_time"
+        ]
+        or 0
+    )
+
+    # 이용 시간이 0이면 평균 속도는 0으로 설정
+    if total_usage_time == 0:
+        return 0.00
+
+    # 분 단위를 시간 단위로 변환
+    total_time_in_hours = Decimal(total_usage_time) / Decimal(60)
+
+    # 평균 속도 계산
+    average_speed = Decimal(total_distance) / total_time_in_hours
+
+    return round(average_speed, 2)  # 소수점 둘째 자리까지 반올림
 
 
 # 총 마일리지
@@ -147,35 +174,12 @@ def calculate_calories(user):
         return 0  # 프로필이 없을 경우 0 반환
 
 
-# 평균 속도
-def calculate_average_speed(user):
-    """
-    사용자의 평균 주행 속도를 계산합니다.
-    평균 속도 = 총 이동 거리 (km) / 총 이용 시간 (시간)
-    """
-    # 총 이동 거리와 총 이용 시간 가져오기
-    total_distance = (
-        RideHistory.objects.filter(user=user).aggregate(total_distance=Sum("distance"))[
-            "total_distance"
-        ]
-        or 0
-    )
-
-    total_usage_time = (
-        RideHistory.objects.filter(user=user).aggregate(total_time=Sum("usage_time"))[
-            "total_time"
-        ]
-        or 0
-    )
-
-    # 이용 시간이 0이면 평균 속도는 0으로 설정
-    if total_usage_time == 0:
-        return 0.00
-
-    # 분 단위를 시간 단위로 변환
-    total_time_in_hours = Decimal(total_usage_time) / Decimal(60)
-
-    # 평균 속도 계산
-    average_speed = Decimal(total_distance) / total_time_in_hours
-
-    return round(average_speed, 2)  # 소수점 둘째 자리까지 반올림
+# 평균 주행 속도
+# def calculate_average_speed(user):
+#     avg_speed = (
+#         RideHistory.objects.filter(user=user).aggregate(
+#             avg_speed=Avg(F("distance") / (F("usage_time") / 60))  # km/h
+#         )["avg_speed"]
+#         or 0
+#     )
+#     return round(avg_speed, 2)

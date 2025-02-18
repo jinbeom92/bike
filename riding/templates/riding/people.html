@@ -16,7 +16,7 @@
         </div>
         <div class="route-item">
             <img src="{% static 'riding/images/total-time-logo.png' %}" class="total-logo" alt="총 소요시간 아이콘">
-            <span class="value">70</span>
+            <span class="value">{{ estimated_time }}</span>
             <span class="unit">min</span>
         </div>
         <div class="route-item">
@@ -36,7 +36,7 @@
     <div class="group-details">
         <div class="group-info-item">
             <img class="startend" src="{% static 'riding/images/start-logo.png' %}" alt="출발지 아이콘">
-            <span class="start-load-value" id="departure">4826. 홈플러스 면목점</span>
+            <span class="start-load-value" id="departure"></span>
         </div>
         <div class="group-info-item">
             <img class="startend" src="{% static 'riding/images/middle-logo.png' %}" alt="경유지 아이콘">
@@ -44,7 +44,7 @@
         </div>
         <div class="group-info-item">
             <img class="startend" src="{% static 'riding/images/end-logo.png' %}" alt="도착지 아이콘">
-            <span class="end-load-value" id="destination">589. 성수역3번출구</span>
+            <span class="end-load-value" id="destination"></span>
         </div>
     </div>
 

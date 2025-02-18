@@ -1,6 +1,7 @@
-// 전역 변수 설정 부분에 드롭업 참조 추가
+// 전역 변수 설정
 let groupInfoDropup = null;
 
+// 맵
 document.addEventListener("DOMContentLoaded", function () {
     console.log("🌍 지도 및 위치 기능 초기화 시작");
 
@@ -64,21 +65,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // 🌟 출발점/도착점 설정 및 경로 검색 함수
     function handleMarkerClick(latitude, longitude) {
+        const locationName = bikeLocations.find(loc => 
+            loc.위도 === latitude && loc.경도 === longitude
+        ).대여소명;
+    
         if (!startPoint) {
             startPoint = {
                 lat: latitude,
-                lng: longitude
+                lng: longitude,
+                name: locationName
             };
+            document.getElementById('departure').textContent = locationName;
             console.log("📍 출발점 설정:", startPoint);
             alert("출발점이 설정되었습니다.");
         } else if (!endPoint) {
             endPoint = {
                 lat: latitude,
-                lng: longitude
+                lng: longitude,
+                name: locationName
             };
+            document.getElementById('destination').textContent = locationName;
             console.log("📍 도착점 설정:", endPoint);
             alert("도착점이 설정되었습니다.");
-
+    
             findPath(startPoint.lat, startPoint.lng, endPoint.lat, endPoint.lng);
         }
     }
@@ -104,8 +113,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 drawPath(data.path);
                 // 거리 값을 표시할 특정 요소 선택
                 const distanceElement = document.querySelector('.route-info .route-item:first-child .value');
+                const timeElement = document.querySelector('.route-info .route-item:nth-child(2) .value');
                 if (distanceElement) {
                     distanceElement.textContent = data.distance;
+                    timeElement.textContent = data.estimated_time;
                 }
             } else {
                 console.error("❌ 경로 데이터를 가져오지 못했습니다.");
@@ -117,8 +128,6 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("경로 검색 중 오류가 발생했습니다.");
         });
     }
-
-
 
     // 🌟 지도에 경로 그리기
     function drawPath(pathData) {
@@ -153,7 +162,6 @@ document.addEventListener("DOMContentLoaded", function () {
         showGroupInfoDropup();
     }
     
-
     // 모임 정보 드롭업 표시 함수
     function showGroupInfoDropup() {
         if (groupInfoDropup) {
@@ -207,6 +215,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 // 출발점, 도착점 초기화
                 startPoint = null;
                 endPoint = null;
+                
+                // 텍스트 초기화
+                document.getElementById('departure').textContent = '';
+                document.getElementById('destination').textContent = '';
                 
                 // 이벤트 리스너 제거
                 if (currentTouchHandler) {
@@ -263,7 +275,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
-
 
 
 // 🚀 **사이드바 및 사용자 정보 로드**
@@ -378,9 +389,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 5분마다 정보 업데이트 (선택사항)
     setInterval(updateSidebarInfo, 300000);
 });
-
-
-
 
 
 // 🚴‍♂️ 라이딩 시작 (start_ride API 호출)
