@@ -1,0 +1,23 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'riding/css/rental.css' %}" />
+</head>
+<!-- 이용권 선택 드롭업 -->
+<div class="ticket-select-container" id="ticket-select-dropup">
+    <h3 class="ticket-title">이용권 선택</h3>
+    <div class="ticket-options">
+        <button class="ticket-btn" id="ticket-1h">
+            <img src="{% static 'riding/images/1hour-white-logo.png' %}" alt="1시간 이용권" class="default-img">
+            <img src="{% static 'riding/images/1hour-black-logo.png' %}" alt="1시간 이용권 선택됨" class="selected-img">
+        </button>
+        <button class="ticket-btn" id="ticket-2h">
+            <img src="{% static 'riding/images/2hour-white-logo.png' %}" alt="2시간 이용권" class="default-img">
+            <img src="{% static 'riding/images/2hour-black-logo.png' %}" alt="2시간 이용권 선택됨" class="selected-img">
+        </button>
+    </div>
+</div>
+

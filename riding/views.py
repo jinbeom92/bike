@@ -6,17 +6,17 @@ import requests
 from django.utils import timezone
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 from django.utils.timezone import now
 from django.shortcuts import render
 from django.conf import settings
+from typing import Dict, Any, Tuple
+from functools import wraps
+from functools import lru_cache
+from django.core.cache import cache
+import logging
 from .forms import UserInfoEditForm
-from users.utils import (
-    generate_otp,
-    save_otp_to_cache,
-    verify_otp,
-    send_user_info_edit_email,
-)
 from .models import RideHistory, MileageHistory
 from .utils import (
     calculate_path_distance,
@@ -31,193 +31,306 @@ from users.utils import (
     calculate_total_mileage,
     update_most_used_station,
 )
+from users.utils import (
+    generate_otp,
+    save_otp_to_cache,
+    verify_otp,
+    send_user_info_edit_email,
+)
 
-# 서울 공공자전거 API 키
-API_KEY = "6263764e466b706837364a78796944"
-
-# 티맵 API 키
-TMAP_API_KEY = "1FN7HeoGnT9VmN9c4uYEx2M25YoC53b55jK8gInN"
+logger = logging.getLogger(__name__)
 
 # CSV 파일 경로 설정
 BASE_DIR = settings.BASE_DIR
 STATIC_DIR = os.path.join(BASE_DIR, "static", "riding", "map")
 
 
-# 서울 공공자전거 API에서 부분적으로 데이터를 가져오는 함수
-def fetch_partial_bike_data(start, end):
-    url = f"http://openapi.seoul.go.kr:8088/{API_KEY}/json/bikeList/{start}/{end}/"
-    response = requests.get(url)
-    if response.status_code != 200:
-        print(f"API 요청 실패: {response.status_code}")
-        return []
-    data = response.json()
-    if "rentBikeStatus" in data and "row" in data["rentBikeStatus"]:
-        return data["rentBikeStatus"]["row"]
-    else:
-        print("데이터 없음 또는 API 오류")
-        return []
+# 상수 분리
+class APIConfig:
+    SEOUL_BIKE_API_KEY = "6263764e466b706837364a78796944"
+    TMAP_API_KEY = "1FN7HeoGnT9VmN9c4uYEx2M25YoC53b55jK8gInN"
+    BASE_URL = "http://openapi.seoul.go.kr:8088"
+    CACHE_TIMEOUT = 60
 
 
-# 대여소 이름에서 번호를 추출하는 함수
-def extract_station_number(station_name):
-    if not isinstance(station_name, str):
-        return ""
-    match = re.match(r"(\d+)\.", station_name)
-    return match.group(1) if match else ""
+# 맵 대여소
+class DataManager:
+    CACHE_TIMEOUT = 3600  # 1시간
 
+    @staticmethod
+    @lru_cache(maxsize=1)
+    def load_static_data(file_name):
+        """정적 CSV 파일 로드 (메모리 캐싱)"""
+        try:
+            file_path = os.path.join(STATIC_DIR, file_name)
+            return pd.read_csv(file_path, encoding="utf-8")
+        except Exception as e:
+            logger.error(f"CSV 파일 로드 실패 ({file_name}): {str(e)}")
+            return pd.DataFrame()
 
-# 메인 지도 뷰 함수: 모든 데이터를 처리하고 지도 페이지를 렌더링
-def map_main_view(request):
-    # 공공자전거 데이터 가져오기
-    chunks = [fetch_partial_bike_data(i, i + 999) for i in range(1, 3001, 1000)]
-    all_data = sum(chunks, [])
+    @staticmethod
+    def get_bike_data():
+        """자전거 데이터 Redis 캐싱"""
+        cache_key = "bike_data"
+        cached_data = cache.get(cache_key)
 
-    # 실시간 자전거 데이터를 데이터프레임으로 변환
-    if all_data:
-        live_bike_df = pd.DataFrame(all_data)
-        live_bike_df = live_bike_df[
-            [
-                "stationName",
-                "rackTotCnt",
-                "parkingBikeTotCnt",
-                "stationLatitude",
-                "stationLongitude",
-                "shared",
+        if cached_data:
+            return pd.DataFrame(cached_data)
+
+        chunks = [fetch_partial_bike_data(i, i + 999) for i in range(1, 3001, 1000)]
+        all_data = sum(chunks, [])
+
+        if all_data:
+            df = pd.DataFrame(all_data)
+            df = df[
+                [
+                    "stationName",
+                    "rackTotCnt",
+                    "parkingBikeTotCnt",
+                    "stationLatitude",
+                    "stationLongitude",
+                    "shared",
+                ]
             ]
-        ]
-        live_bike_df.columns = [
-            "대여소명_원본",
-            "거치대_총_개수",
-            "현재_자전거_개수",
-            "위도",
-            "경도",
-            "거치율",
-        ]
-        live_bike_df["대여소번호"] = live_bike_df["대여소명_원본"].apply(
-            extract_station_number
-        )
-    else:
-        live_bike_df = pd.DataFrame(
-            columns=[
+            df.columns = [
                 "대여소명_원본",
                 "거치대_총_개수",
                 "현재_자전거_개수",
                 "위도",
                 "경도",
                 "거치율",
-                "대여소번호",
             ]
+            df["대여소번호"] = df["대여소명_원본"].apply(extract_station_number)
+
+            cache.set(cache_key, df.to_dict(), DataManager.CACHE_TIMEOUT)
+            return df
+        return pd.DataFrame()
+
+
+def api_error_handler(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except requests.RequestException as e:
+            logger.error(f"API 요청 실패: {str(e)}")
+            return []
+        except Exception as e:
+            logger.error(f"예상치 못한 오류: {str(e)}")
+            return []
+
+    return wrapper
+
+
+@api_error_handler
+def fetch_partial_bike_data(start, end):
+    # 캐시 키 생성
+    cache_key = f"bike_data_{start}_{end}"
+
+    # 캐시된 데이터 확인
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return cached_data
+
+    # API 요청
+    url = f"{APIConfig.BASE_URL}/{APIConfig.SEOUL_BIKE_API_KEY}/json/bikeList/{start}/{end}/"
+    response = requests.get(url, timeout=5)
+    response.raise_for_status()
+
+    data = response.json()
+    result = data.get("rentBikeStatus", {}).get("row", [])
+
+    # 결과 캐싱
+    if result:
+        cache.set(cache_key, result, APIConfig.CACHE_TIMEOUT)
+
+    return result
+
+
+# 대여소 이름에서 번호를 추출하는 함수
+@lru_cache(maxsize=1000)
+def extract_station_number(station_name):
+    if not isinstance(station_name, str):
+        return ""
+    # 컴파일된 정규식 패턴 재사용
+    pattern = re.compile(r"(\d+)\.")
+    match = pattern.match(station_name)
+    return match.group(1) if match else ""
+
+
+# 맵 뷰
+def map_main_view(request):
+    try:
+        # 데이터 매니저 초기화
+        data_mgr = DataManager()
+
+        # 실시간 자전거 데이터 가져오기
+        live_bike_df = data_mgr.get_bike_data()
+
+        # 정적 데이터 로드 (메모리 캐싱)
+        static_bike_df = data_mgr.load_static_data(
+            "processed_bike_station_info_name_updated.csv"
+        )
+        static_bike_df["대여소번호"] = static_bike_df["대여소명"].apply(
+            extract_station_number
         )
 
-    # CSV 파일에서 정적 자전거 대여소 정보 읽기 (UTF-8 인코딩 사용)
-    csv_path = os.path.join(STATIC_DIR, "processed_bike_station_info_name_updated.csv")
-    static_bike_df = pd.read_csv(csv_path, encoding="utf-8")
-    static_bike_df["대여소번호"] = static_bike_df["대여소명"].apply(
-        extract_station_number
-    )
+        # 데이터 병합
+        merged_df = pd.merge(live_bike_df, static_bike_df, on="대여소번호", how="inner")
+        merged_df = merged_df[
+            ["대여소명", "현재_자전거_개수", "거치율", "위도_x", "경도_x", "자치구"]
+        ]
+        merged_df.rename(columns={"위도_x": "위도", "경도_x": "경도"}, inplace=True)
 
-    # 실시간 데이터와 CSV 데이터 병합 (대여소번호 기준)
-    merged_df = pd.merge(live_bike_df, static_bike_df, on="대여소번호", how="inner")
-    merged_df = merged_df[
-        ["대여소명", "현재_자전거_개수", "거치율", "위도_x", "경도_x", "자치구"]
-    ]
-    merged_df.rename(columns={"위도_x": "위도", "경도_x": "경도"}, inplace=True)
+        # 부가 데이터 로드 (메모리 캐싱)
+        park_df = data_mgr.load_static_data("s-fo-location.csv")
+        museum_df = data_mgr.load_static_data("s-pic-location.csv")
+        restaurant_df = data_mgr.load_static_data("s-teste-location.csv")
 
-    # 공원 데이터 읽기 (UTF-8 인코딩 사용)
-    park_csv_path = os.path.join(STATIC_DIR, "s-fo-location.csv")
-    park_df = pd.read_csv(park_csv_path, encoding="utf-8")
+        # JSON 변환
+        context = {
+            "TMAP_API_KEY": APIConfig.TMAP_API_KEY,
+            "bike_locations": merged_df.to_dict(orient="records"),
+            "park_locations": park_df[["공원명", "위도", "경도"]].to_dict(
+                orient="records"
+            ),
+            "museum_locations": museum_df[["미술관명", "위도", "경도"]].to_dict(
+                orient="records"
+            ),
+            "restaurant_locations": restaurant_df[["맛집명", "위도", "경도"]].to_dict(
+                orient="records"
+            ),
+        }
 
-    # 미술관 데이터 읽기 (UTF-8 인코딩 사용)
-    museum_csv_path = os.path.join(STATIC_DIR, "s-pic-location.csv")
-    museum_df = pd.read_csv(museum_csv_path, encoding="utf-8")
+        # JSON 인코딩
+        for key in context:
+            if key != "TMAP_API_KEY":
+                context[key] = json.dumps(context[key])
 
-    # 맛집 데이터 읽기 (UTF-8 인코딩 사용)
-    restaurant_csv_path = os.path.join(STATIC_DIR, "s-teste-location.csv")
-    restaurant_df = pd.read_csv(restaurant_csv_path, encoding="utf-8")
+        return render(request, "riding/map_main.html", context)
 
-    # 각 데이터프레임을 JSON 형식으로 변환
-    bike_locations = merged_df.to_dict(orient="records")
-    park_locations = park_df[["공원명", "위도", "경도"]].to_dict(orient="records")
-    museum_locations = museum_df[["미술관명", "위도", "경도"]].to_dict(orient="records")
-    restaurant_locations = restaurant_df[["맛집명", "위도", "경도"]].to_dict(
-        orient="records"
-    )
-
-    # 템플릿에 전달할 컨텍스트 데이터 준비
-    context = {
-        "TMAP_API_KEY": TMAP_API_KEY,
-        "bike_locations": json.dumps(bike_locations),
-        "park_locations": json.dumps(park_locations),
-        "museum_locations": json.dumps(museum_locations),
-        "restaurant_locations": json.dumps(restaurant_locations),
-    }
-
-    # 지도 페이지 렌더링
-    return render(request, "riding/map_main.html", context)
+    except Exception as e:
+        logger.error(f"지도 뷰 렌더링 실패: {str(e)}")
+        return render(
+            request, "error.html", {"message": "데이터 로드 중 오류가 발생했습니다."}
+        )
 
 
-# 경로 거리 뷰
-def calculate_route(request):
-    if request.method == "POST":
+# 경로 클레스
+class RouteCalculator:
+    CACHE_TIMEOUT = 1800  # 30분
+    DEFAULT_SPEED = 12
+    API_URL = "https://apis.openapi.sk.com/tmap/routes/pedestrian"
+
+    def __init__(self):
+        self.headers = {"appKey": APIConfig.TMAP_API_KEY}
+
+    def get_cache_key(
+        self, start_lat: str, start_lng: str, end_lat: str, end_lng: str
+    ) -> str:
+        return f"route_{start_lat}_{start_lng}_{end_lat}_{end_lng}"
+
+    def get_params(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "version": "1",
+            "format": "json",
+            "startX": data.get("startLng"),
+            "startY": data.get("startLat"),
+            "endX": data.get("endLng"),
+            "endY": data.get("endLat"),
+            "startName": "출발지",
+            "endName": "도착지",
+        }
+
+    def validate_coordinates(self, data: Dict[str, Any]) -> Tuple[bool, str]:
+        required_fields = ["startLat", "startLng", "endLat", "endLng"]
+
+        if not all(data.get(field) for field in required_fields):
+            return False, "필수 좌표가 누락되었습니다."
+
         try:
-            # POST 데이터에서 좌표 받기
-            data = request.POST
-            start_lat = data.get("startLat")
-            start_lng = data.get("startLng")
-            end_lat = data.get("endLat")
-            end_lng = data.get("endLng")
+            for field in required_fields:
+                float(data.get(field))
+            return True, ""
+        except ValueError:
+            return False, "잘못된 좌표 형식입니다."
 
-            # T map API 호출
-            headers = {"appKey": TMAP_API_KEY}  # 기존에 정의된 API 키 사용
+    def calculate_route_from_api(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        response = requests.post(
+            self.API_URL, headers=self.headers, params=params, timeout=10
+        )
+        response.raise_for_status()
+        return response.json()
 
-            api_url = "https://apis.openapi.sk.com/tmap/routes/pedestrian"
-            params = {
-                "version": "1",
-                "format": "json",
-                "startX": start_lng,
-                "startY": start_lat,
-                "endX": end_lng,
-                "endY": end_lat,
-                "startName": "출발지",
-                "endName": "도착지",
-            }
 
-            response = requests.post(api_url, headers=headers, params=params)
-            route_data = response.json()
+# 경로 함수
+@require_http_methods(["POST"])
+def calculate_route(request):
+    try:
+        calculator = RouteCalculator()
+        data = request.POST
 
-            if "features" in route_data:
-                # 거리 계산
-                distance = calculate_path_distance(route_data["features"])
+        # 입력값 검증
+        is_valid, error_message = calculator.validate_coordinates(data)
+        if not is_valid:
+            return JsonResponse(
+                {"status": "error", "message": error_message}, status=400
+            )
 
-                # 사용자의 실제 평균 속도 계산
-                user_speed = calculate_average_speed(request.user)
-                if user_speed == 0:
-                    user_speed = 12  # 기본 속도 설정
+        # 캐시 확인
+        cache_key = calculator.get_cache_key(
+            data.get("startLat"),
+            data.get("startLng"),
+            data.get("endLat"),
+            data.get("endLng"),
+        )
+        cached_result = cache.get(cache_key)
+        if cached_result:
+            return JsonResponse(cached_result)
 
-                # 예상 소요 시간 계산
-                estimated_time = calculate_estimated_time(distance, user_speed)
+        # API 요청 및 경로 계산
+        params = calculator.get_params(data)
+        route_data = calculator.calculate_route_from_api(params)
 
-                return JsonResponse(
-                    {
-                        "status": "success",
-                        "distance": distance,
-                        "path": route_data["features"],
-                        "estimated_time": estimated_time,
-                    }
-                )
+        if "features" not in route_data:
+            return JsonResponse(
+                {"status": "error", "message": "경로를 찾을 수 없습니다."}, status=404
+            )
 
-            else:
-                return JsonResponse(
-                    {"status": "error", "message": "경로를 찾을 수 없습니다."},
-                    status=404,
-                )
+        # 거리 및 시간 계산
+        distance = calculate_path_distance(route_data["features"])
+        user_speed = (
+            calculate_average_speed(request.user) or RouteCalculator.DEFAULT_SPEED
+        )
+        estimated_time = calculate_estimated_time(distance, user_speed)
 
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        # 결과 생성
+        result = {
+            "status": "success",
+            "distance": distance,
+            "path": route_data["features"],
+            "estimated_time": estimated_time,
+        }
 
-    return JsonResponse(
-        {"status": "error", "message": "잘못된 요청입니다."}, status=400
-    )
+        # 결과 캐싱
+        cache.set(cache_key, result, RouteCalculator.CACHE_TIMEOUT)
+
+        return JsonResponse(result)
+
+    except requests.RequestException as e:
+        logger.error(f"API 요청 실패: {str(e)}")
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": "경로 계산 서비스에 일시적인 문제가 있습니다.",
+            },
+            status=503,
+        )
+    except Exception as e:
+        logger.error(f"경로 계산 중 오류 발생: {str(e)}")
+        return JsonResponse(
+            {"status": "error", "message": "서버 내부 오류가 발생했습니다."}, status=500
+        )
 
 
 # 사이드바 뷰

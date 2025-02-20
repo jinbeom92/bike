@@ -1,7 +1,4 @@
 {% load static %}
-<script>
-    var myLocationIcon = "{% static 'riding/images/my_location-logo.png' %}";
-</script>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -30,6 +27,12 @@
             <!-- 시간 선택 드롭업 불러오기 -->
             {% include 'riding/time_dropdown.html' %}
 
+            <!-- 모임 생성하기 드롭업 불러오기 -->
+            {% include 'riding/party_join.html' %}
+
+            <!-- 이용권 드롭업 불러오기 -->
+            {% include 'riding/rental.html' %}
+
             <!-- 참여 드롭업 불러오기 -->
             {% include 'riding/people.html' %}
 
@@ -42,15 +45,56 @@
         </div>
     </main>
 
-    <!-- Tmap API 스크립트 -->
-    <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey={{ TMAP_API_KEY }}"></script>
+    <!-- 데이터 초기화 스크립트 -->
     <script>
-        const bikeLocations = {{ bike_locations|safe }};
-        const parkLocations = {{ park_locations|safe }};
-        const museumLocations = {{ museum_locations|safe }};
-        const restaurantLocations = {{ restaurant_locations|safe }};
-        console.log("🚲 bikeLocations 데이터:", {{ bike_locations|safe }});
+        // Django 템플릿에서 전달된 데이터를 안전하게 JSON으로 파싱
+        const GLOBAL_CONFIG = {
+            csrfToken: document.querySelector('[name=csrfmiddlewaretoken]').value,
+            staticUrls: {
+                myLocationIcon: "{% static 'riding/images/my_location-logo.png' %}",
+                maxLogo: "{% static 'riding/images/max-logo.png' %}",
+                meanLogo: "{% static 'riding/images/mean-logo.png' %}",
+                minLogo: "{% static 'riding/images/min-logo.png' %}"
+            }
+        };
+
+        GLOBAL_CONFIG.bikeLocations = {{ bike_locations|safe }};
+        GLOBAL_CONFIG.parkLocations = {{ park_locations|safe }};
+        GLOBAL_CONFIG.museumLocations = {{ museum_locations|safe }};
+        GLOBAL_CONFIG.restaurantLocations = {{ restaurant_locations|safe }};
     </script>
-    <script src="{% static 'riding/js/map_main.js' %}"></script>
+
+    <!-- 외부 API -->
+    <script src="https://apis.openapi.sk.com/tmap/jsv2?version=1&appKey={{ TMAP_API_KEY }}"></script>
+
+    <!-- 데이터 스크립트 -->
+    {{ bike_locations|json_script:"bike-data" }}
+    {{ park_locations|json_script:"park-data" }}
+    {{ museum_locations|json_script:"museum-data" }}
+    {{ restaurant_locations|json_script:"restaurant-data" }}
+
+    <!-- 모듈 스크립트 -->
+    <script src="{% static 'riding/js/modules/MapManager.js' %}"></script>
+    <script src="{% static 'riding/js/modules/MarkerManager.js' %}"></script>
+    <script src="{% static 'riding/js/modules/DropupManager.js' %}"></script>
+    <script src="{% static 'riding/js/modules/RouteManager.js' %}"></script>
+    <script src="{% static 'riding/js/modules/LocationManager.js' %}"></script>
+    
+    <!-- 메인 애플리케이션 스크립트 -->
+    <script src="{% static 'riding/js/BikeMapApplication.js' %}"></script>
+
+    <!-- 앱 초기화 스크립트 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            try {
+                const app = new BikeMapApplication(GLOBAL_CONFIG);
+                app.init();
+                console.log("✅ 애플리케이션이 성공적으로 초기화되었습니다.");
+            } catch (error) {
+                console.error("❌ 앱 초기화 중 오류 발생:", error);
+                alert("애플리케이션을 시작하는 중 오류가 발생했습니다.");
+            }
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,63 @@
+.ticket-select-container {
+    position: absolute;
+    width: 100%;
+    max-width: 405px;
+    height: 150px;
+    left: 50%;
+    bottom: -150px;
+    transform: translateX(-50%);
+    background-color: white;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    z-index: 10;
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+}
+
+.ticket-select-container.active {
+    bottom: 0;
+    opacity: 1;
+}
+
+.ticket-title {
+    font-family: "Pretendard-ExtraBold", Helvetica;
+    font-size: 20px;
+    font-weight: 800;
+    color: #352555;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.ticket-options {
+    display: flex;
+    justify-content: space-around;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.ticket-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.ticket-btn .selected-img {
+    display: none;
+}
+
+.ticket-btn .default-img {
+    display: block;
+}
+
+.ticket-btn.selected .default-img {
+    display: none;
+}
+
+.ticket-btn.selected .selected-img {
+    display: block;
+}
