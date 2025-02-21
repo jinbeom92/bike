@@ -16,6 +16,7 @@ from functools import wraps
 from functools import lru_cache
 from django.core.cache import cache
 import logging
+from .cache_manager import RidingCacheManager
 from .forms import UserInfoEditForm
 from .models import RideHistory, MileageHistory
 from .utils import (
@@ -488,6 +489,31 @@ def mileage_history(request):
     return render(
         request, "riding/mileage_history.html", {"mileage_history": mileage_history}
     )
+
+
+# 모임 생성 저장
+@require_http_methods(["POST"])
+def save_marker(request):
+    try:
+        data = json.loads(request.body)
+        cache_manager = RidingCacheManager()
+
+        # 시작점 저장
+        start_point = data.get("start_point")
+        if start_point:
+            cache_manager.save_start_point(request.user.id, start_point)
+
+        # 반납소 위치 저장
+        end_point = data.get("end_point")
+        if end_point:
+            cache_manager.save_return_point(request.user.id, end_point)
+
+        return JsonResponse(
+            {"status": "success", "message": "위치가 성공적으로 저장되었습니다."}
+        )
+
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
 
 # 회원정보 변경 뷰

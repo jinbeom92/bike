@@ -23,16 +23,8 @@ class BikeMapApplication {
     handleMarkerSelected(event) {
         const ticketDropup = this.dropupManager.ticketDropup;
         
-        if (ticketDropup?.classList.contains('active')) {
-            // 이용권 선택 드롭업이 열려있는 경우
-            this.dropupManager.closeTicketSelectDropup();
-            
-            // 이용권 선택 드롭업이 완전히 닫힌 후 모임 생성하기 드롭업 열기
-            document.addEventListener('ticketDropupClosed', () => {
-                this.dropupManager.showGroupCreateDropup();
-            }, { once: true });
-        } else {
-            // 일반적인 경우 바로 모임 생성하기 드롭업 표시
+        // 이용권 선택 드롭업이 열려있지 않을 때만 모임 생성하기 드롭업 표시
+        if (!ticketDropup?.classList.contains('active')) {
             this.dropupManager.showGroupCreateDropup();
         }
     }
@@ -91,34 +83,53 @@ class BikeMapApplication {
     }
 
     setupEventListeners() {
+        // 반납소 설정 리스너를 클래스 속성으로 저장
+        this.returnListener = (event) => {
+            console.log('반납소로 설정');
+            const endpoint = event.detail.location;
+            // 반납소 위치를 endPoint로 설정
+            this.markerManager.setEndPoint({
+                lat: endpoint.lat,
+                lng: endpoint.lng,
+                name: endpoint.name
+            });
+            this.dropupManager.showReturnDropup();
+        };
+    
         // 이용권 선택 버튼들의 공통 이벤트 처리
         const handleTicketSelection = (duration, radius) => {
             console.log(`🎫 ${duration}시간 대여권 선택, 반경: ${radius}m`);
             
             const startPoint = this.markerManager.getStartPoint();
-            console.log('현재 시작점:', startPoint); // 디버깅용 로그
-        
+            console.log('현재 시작점:', startPoint);
+    
             if (!startPoint || !startPoint.lat || !startPoint.lng) {
                 console.warn('유효한 시작점이 설정되지 않았습니다.');
                 return;
             }
-        
+    
             // 기존 선택 제거
             document.querySelectorAll('.ticket-btn').forEach(btn => {
                 btn.classList.remove('selected');
             });
-        
+    
             // 현재 버튼 선택
             const selectedButton = document.getElementById(`ticket-${duration}h`);
             if (selectedButton) {
                 selectedButton.classList.add('selected');
+                
+                // 대여권이 선택되면 마커 클릭 이벤트를 변경
+                document.removeEventListener('markerSelected', this.handleMarkerSelected);
+                document.removeEventListener('markerSelected', this.returnListener);
             }
-        
+
+                document.addEventListener('markerSelected', this.returnListener, { once: true });
+    
             // 기존 마커와 원 초기화
             this.markerManager.clearMarkers();
             this.mapManager.clearCircle();
             
-            // 반경 원 그리기 (지도 중심 이동 포함)
+            // 반경 원 그리기
             const mintColor = 'rgba(178, 235, 217, 0.6)';
             this.mapManager.drawCircle(startPoint, radius, mintColor);
             
@@ -131,7 +142,7 @@ class BikeMapApplication {
         // 대여권 버튼 이벤트
         const ticketOneHour = document.getElementById('ticket-1h');
         const ticketTwoHour = document.getElementById('ticket-2h');
-
+    
         if (ticketOneHour) {
             ticketOneHour.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -140,7 +151,7 @@ class BikeMapApplication {
                 handleTicketSelection(1, 3000);
             });
         }
-
+    
         if (ticketTwoHour) {
             ticketTwoHour.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -163,15 +174,65 @@ class BikeMapApplication {
                 }, { once: true });
             });
         }
+    
+        // 반납소 버튼 이벤트
+        const returnBtn = document.getElementById('return-btn');
+        if (returnBtn) {
+            returnBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const startPoint = this.markerManager.getStartPoint();
+                const endPoint = this.markerManager.getEndPoint();
+        
+                if (!endPoint) {
+                    console.error('반납소 위치가 선택되지 않았습니다.');
+                    return;
+                }
+        
+                fetch('/riding/save-marker/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': this.config.csrfToken,
+                    },
+                    body: JSON.stringify({
+                        start_point: startPoint,
+                        end_point: endPoint,
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        this.dropupManager.closeReturnDropup();
+                        console.log(`위치 캐쉬 저장 완료`);
+                        // 테마 드롭업
+                        this.dropupManager.showThemaDropup();
+                    }
+                });
+            });
+        }
 
-        // 이용권 선택 드롭업 닫힘 이벤트 핸들러 추가
+        // 이용권 선택 드롭업 닫힘 이벤트 핸들러
         document.addEventListener('ticketDropupClosed', () => {
-            // 마커와 원 초기화
+            const selectedTicket = document.querySelector('.ticket-btn.selected');
+            
+            // 모든 마커 관련 이벤트 리스너 제거
+            document.removeEventListener('markerSelected', this.handleMarkerSelected);
+            document.removeEventListener('markerSelected', this.returnListener);
+            
+            // 맵 초기화
             this.markerManager.clearMarkers();
             this.mapManager.clearCircle();
-
-            // 전체 마커 다시 표시
             this.markerManager.addBikeMarkers(this.bikeLocations);
+            
+            // 모임 생성하기 이벤트만 다시 등록
+            document.addEventListener('markerSelected', this.handleMarkerSelected);
+        });
+    
+        // 반납소 드롭업 닫힘 이벤트 핸들러
+        document.addEventListener('returnDropupClosed', () => {
+            // 필요한 경우 추가 처리
         });
     
         // 이벤트 리스너 등록
@@ -180,6 +241,7 @@ class BikeMapApplication {
         document.addEventListener('markerSelected', this.handleMarkerSelected);
         document.addEventListener('groupCreateDropupClosed', this.handleGroupCreateDropupClosed);
     }
+    
 
     setupGroupCreateButton() {
         const createGroupBtn = document.querySelector('.create-group-btn');

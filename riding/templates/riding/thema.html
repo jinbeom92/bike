@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'riding/css/thema.css' %}" />
+</head>
+<!-- 모임 생성하기 드롭업 -->
+<div class="thema-container">
+    <div class="thema-select">
+        <div class="thema-select-title">
+            <h2 class="thema-title">테마 선택</h2>
+        </div>
+        {% comment %} <div class="thema-wrapper">
+            <div class="thema1">
+                <img src="{% static 'riding/images/fast-thema-logo.png' %}" alt="최단거리">
+                <div class="thema-text-1">
+                    <div class="thema-stopover">경유지</div>
+                    <div class="value">-</div>
+                </div>
+                <div class="thema-text-2">
+                    <div class="total-load">총 이동 거리</div>
+                    <div class="value">1.5</div>
+                    <div class="unit">km</div>
+                    </div>
+                </div>
+                <div class="thema-text-3">
+                    <div class="total-time">예상 소요 시간</div>
+                    <div class="value">10</div>
+                    <div class="unit">min</div>
+                </div>
+            </div>
+            <div class="thema2">
+                <img src="{% static 'riding/images/forest-thema-logo.png' %}" alt="숲의거리">
+                <div class="thema-text-1">
+                    <div class="thema-stopover">경유지</div>
+                    <div class="thema-value">-</div>
+                </div>
+                <div class="thema-text-2">
+                    <div class="thema-total-load">총 이동 거리</div>
+                    <div class="thema-value">1.5</div>
+                    <div class="thema-unit">km</div>
+                    </div>
+                </div>
+                <div class="thema-text-3">
+                    <div class="thema-total-time">예상 소요 시간</div>
+                    <div class="thema-value">10</div>
+                    <div class="thema-unit">min</div>
+                </div>
+            </div>
+            <div class="thema3">
+                <img src="{% static 'riding/images/pic-thema-logo.png' %}" alt="문화거리">
+                <div class="thema-text-1">
+                    <div class="thema-stopover">경유지</div>
+                    <div class="thema-value">-</div>
+                </div>
+                <div class="thema-text-2">
+                    <div class="thema-total-load">총 이동 거리</div>
+                    <div class="thema-value">1.5</div>
+                    <div class="thema-unit">km</div>
+                    </div>
+                </div>
+                <div class="thema-text-3">
+                    <div class="thema-totla-time">예상 소요 시간</div>
+                    <div class="thema-value">10</div>
+                    <div class="thema-unit">min</div>
+                </div>
+            </div>
+            <div class="thema4">
+                <img src="{% static 'riding/images/teste-thema-logo.png' %}" alt="맛의거리">
+                <div class="thema-text-1">
+                    <div class="thema-stopover">경유지</div>
+                    <div class="thema-value">-</div>
+                </div>
+                <div class="thema-text-2">
+                    <div class="thema-total-load">총 이동 거리</div>
+                    <div class="thema-value">1.5</div>
+                    <div class="thema-unit">km</div>
+                    </div>
+                </div>
+                <div class="thema-text-3">
+                    <div class="thema-total-time">예상 소요 시간</div>
+                    <div class="thema-value">10</div>
+                    <div class="thema-unit">min</div>
+                </div>
+            </div>
+        </div>
+        <button id="thema-btn" class="thema-btn">
+            <img src="{% static 'riding/images/party-generated-logo.png' %}" alt="모임원 구하기">
+        </button> {% endcomment %}
+    </div>
+</div>

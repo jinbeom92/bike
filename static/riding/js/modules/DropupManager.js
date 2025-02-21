@@ -4,6 +4,7 @@ class DropupManager {
         // DOM 요소 초기화
         this.groupInfoDropup = document.querySelector('.group-info-container');
         this.groupCreateDropup = document.querySelector('.group-create-container');
+        this.returnDropup = document.getElementById('return-dropup');
         this.ticketDropup = document.getElementById('ticket-select-dropup');
         this.overlay = document.getElementById('overlay');
         this.currentHandler = null;
@@ -36,7 +37,8 @@ class DropupManager {
         if (this.ticketDropup?.classList.contains('active')) {
             const isOutside = !this.ticketDropup.contains(event.target);
             if (isOutside && !createGroupBtn) {
-                this.closeTicketSelectDropup();
+                // isOutsideClick 파라미터를 true로 전달
+                this.closeTicketSelectDropup(true);
                 event.stopPropagation();
                 return;
             }
@@ -57,6 +59,16 @@ class DropupManager {
             const isOutside = !this.groupCreateDropup.contains(event.target);
             if (isOutside) {
                 this.closeGroupCreateDropup();
+                event.stopPropagation();
+                return;
+            }
+        }
+
+        // 반납소 드롭업 처리
+        if (this.returnDropup?.classList.contains('active')) {
+            const isOutside = !this.returnDropup.contains(event.target);
+            if (isOutside) {
+                this.closeReturnDropup();
                 event.stopPropagation();
                 return;
             }
@@ -151,7 +163,7 @@ class DropupManager {
         }
     }
 
-    closeTicketSelectDropup() {
+    closeTicketSelectDropup(isOutsideClick = false) {
         try {
             if (!this.ticketDropup) return;
     
@@ -171,12 +183,86 @@ class DropupManager {
                 console.log('✅ 이용권 선택 드롭업 닫기 완료');
                 
                 document.dispatchEvent(new CustomEvent('ticketDropupClosed', {
-                    detail: { source: 'dropupManager' },
+                    detail: { 
+                        source: 'dropupManager',
+                        isOutsideClick: isOutsideClick
+                    },
                     bubbles: false
                 }));
             }, this.transitionDuration);
         } catch (error) {
             console.error('이용권 선택 드롭업 닫기 중 오류:', error);
+        }
+    }
+
+    // 반납소 드롭업 표시
+    showReturnDropup() {
+        try {
+            if (!this.returnDropup) {
+                throw new Error('반납소 드롭업 요소를 찾을 수 없습니다.');
+            }
+            
+            console.log('📌 반납소 드롭업 열기 시작');
+            this.returnDropup.style.display = 'flex';
+            this.returnDropup.style.bottom = '-140px';
+            this.returnDropup.offsetHeight;
+            
+            setTimeout(() => {
+                this.returnDropup.classList.add('active');
+                this.returnDropup.style.bottom = '0';
+                this.showOverlay();
+                console.log('✅ 반납소 드롭업 열기 완료');
+            }, this.animationDelay);
+        } catch (error) {
+            console.error('반납소 드롭업 표시 중 오류:', error);
+            throw error;
+        }
+    }
+
+    // 반납소 드롭업 닫기
+    closeReturnDropup() {
+        try {
+            if (!this.returnDropup || !this.returnDropup.classList.contains('active')) return;
+            
+            console.log('📌 반납소 드롭업 닫기 시작');
+            this.returnDropup.classList.remove('active');
+            this.returnDropup.style.bottom = '-140px';
+            this.hideOverlay();
+
+            setTimeout(() => {
+                this.returnDropup.style.display = 'none';
+                console.log('✅ 반납소 드롭업 닫기 완료');
+                
+                document.dispatchEvent(new CustomEvent('returnDropupClosed', {
+                    detail: { source: 'dropupManager' },
+                    bubbles: false
+                }));
+            }, this.transitionDuration);
+        } catch (error) {
+            console.error('반납소 드롭업 닫기 중 오류:', error);
+        }
+    }
+
+    // 테마 드롭업
+    showThemaDropup() {
+        try {
+            const themaDropup = document.querySelector('.thema-container');
+            if (!themaDropup) {
+                throw new Error('테마 선택 드롭업 요소를 찾을 수 없습니다.');
+            }
+            
+            console.log('📌 테마 선택 드롭업 열기 시작');
+            themaDropup.style.display = 'flex';
+            themaDropup.offsetHeight;
+            
+            setTimeout(() => {
+                themaDropup.classList.add('active');
+                this.showOverlay();
+                console.log('✅ 테마 선택 드롭업 열기 완료');
+            }, this.animationDelay);
+        } catch (error) {
+            console.error('테마 선택 드롭업 표시 중 오류:', error);
+            throw error;
         }
     }
     

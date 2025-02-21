@@ -19,4 +19,5 @@ urlpatterns = [
     path("send-verification/", views.send_verification, name="send_verification"),
     path("verify-code/", views.verify_code, name="verify_code"),
     path("update-profile/", views.update_profile, name="update_profile"),
+    path("save-marker/", views.save_marker, name="save_marker"),
 ]

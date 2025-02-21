@@ -5,6 +5,7 @@ class MarkerManager {
         this.config = config;
         this.markers = new Map();
         this.startPoint = null;
+        this.endPoint = null;
         this.markerImages = config.staticUrls;
         this.bikeLocations = config.bikeLocations;
         this.selectedMarker = null;
@@ -80,17 +81,38 @@ class MarkerManager {
 
     handleMarkerClick(location, marker) {
         try {
-            // 완전한 초기화
-            this.clearMarkers();
-            this.resetStartPoint();
+            // 이용권 선택 드롭업이 열려있는지 확인
+            const ticketDropup = document.getElementById('ticket-select-dropup');
+            const selectedTicket = document.querySelector('.ticket-btn.selected');
             
-            // 새로운 마커 설정 전에 모든 상태 초기화
+            if (ticketDropup?.classList.contains('active') && selectedTicket) {
+                // 이용권이 선택된 상태에서는 반납소 설정
+                this.endPoint = {
+                    lat: parseFloat(location.위도),
+                    lng: parseFloat(location.경도),
+                    name: location.대여소명,
+                    occupancyRate: location.거치율
+                };
+                console.log('반납소로 설정');
+                
+                // endPoint 설정 후 이벤트 발생
+                document.dispatchEvent(new CustomEvent('markerSelected', {
+                    detail: { 
+                        location: this.endPoint,
+                        showDropup: true 
+                    }
+                }));
+                return;
+            }
+    
+            // 일반적인 경우 모임 생성하기 로직 실행
+            this.clearMarkers();
+            
             if (this.selectedMarker) {
                 this.selectedMarker.setMap(null);
                 this.selectedMarker = null;
             }
             
-            // 새로운 마커 설정
             this.selectedMarker = new Tmapv2.Marker({
                 position: new Tmapv2.LatLng(location.위도, location.경도),
                 icon: this.getMarkerImage(parseFloat(location.거치율)),
@@ -98,7 +120,6 @@ class MarkerManager {
                 title: location.대여소명
             });
             
-            // 시작점 정보 새로 설정
             this.startPoint = {
                 lat: parseFloat(location.위도),
                 lng: parseFloat(location.경도),
@@ -106,10 +127,8 @@ class MarkerManager {
                 occupancyRate: location.거치율
             };
     
-            // 지도 중심 이동
             this.map.setCenter(new Tmapv2.LatLng(location.위도, location.경도));
     
-            // 상태가 완전히 초기화된 후 이벤트 발생
             document.dispatchEvent(new CustomEvent('markerSelected', {
                 detail: { 
                     location: this.startPoint,
@@ -244,16 +263,16 @@ class MarkerManager {
         return `${location.위도}-${location.경도}`;
     }
 
-    resetStartPoint() {
-        this.startPoint = null;
-        if (this.selectedMarker) {
-            this.selectedMarker.setMap(null);
-            this.selectedMarker = null;
-        }
-    }
-
     getStartPoint() {
         return this.startPoint;
+    }
+
+    setEndPoint(endpoint) {
+        this.endPoint = endpoint;
+    }
+
+    getEndPoint() {
+        return this.endPoint;
     }
 
     // 특정 위치의 마커 찾기
